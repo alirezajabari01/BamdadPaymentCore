@@ -186,3 +186,4 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\ru\System.ServiceMod
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\tr\System.ServiceModel.Primitives.resources.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\zh-Hans\System.ServiceModel.Primitives.resources.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\zh-Hant\System.ServiceModel.Primitives.resources.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.sourcelink.json

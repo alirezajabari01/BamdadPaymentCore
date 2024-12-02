@@ -2,25 +2,34 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.SOAP
 {
+    [ServiceContract]
     public interface IPaymentSoapService
     {
+        [OperationContract]
         public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind);
 
+        [OperationContract]
         public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind);
 
+        [OperationContract]
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId);
 
+        [OperationContract]
         public DataTable GetOnlineStatus(string username, string pass, string onlineId);
 
+        [OperationContract]
         public DataTable ReqSettleOnline(string username, string pass, string onlineId);
 
+        [OperationContract]
         public bool ReqReversal(string username, string pass, string onlineId);
 
+        [OperationContract]
         public bool ReqRefund(string username, string pass, string onlineId, string refundAmount);
     }
 }

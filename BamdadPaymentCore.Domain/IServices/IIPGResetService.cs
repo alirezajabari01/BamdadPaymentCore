@@ -16,22 +16,16 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IIPGResetService
     {
-        public Task<TResult> Token<TRequest, TResult>(TRequest request, DataTable dt)
-            where TRequest : ITokenCommand
-            where TResult : class, ITokenVm, new();
         public Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
             where TRequest : ITokenCommand
             where TResult : class, ITokenVm, new();
 
-        public Task<VerifyVm> VerifyTrx(VerifyCommand verifyCommand, DataTable dt);
         public Task<VerifyVm> VerifyTrx(VerifyCommand verifyCommand, SelectPaymentDetailResult paymentDetail);
 
-        public Task<SettleVm> SettleTrx(SettleCommand settleCommand, DataTable dt);
         public Task<SettleVm> SettleTrx(SettleCommand settleCommand, SelectPaymentDetailResult paymentDetail);
 
         public Task<ReverseVm> ReverseTrx(ReverseCommand reverseCommand);
 
-        public Task<PaymentResultVm> TranResult(int merchantConfigId, long localInvoiceId, DataTable dt);
         public Task<PaymentResultVm> TranResult(int merchantConfigId, long localInvoiceId, SelectPaymentDetailResult paymentDetail);
     }
 }

@@ -39,6 +39,8 @@ namespace BamdadPaymentCore.Domain
             services.AddScoped<IIPGResetService, IPGResetService>();
 
             services.AddScoped<IReturnFromBankService, ReturnFromBankService>();
+
+            services.AddScoped<IReturnBankWithAcceptService, ReturnBankWithAcceptService>();
         }
 
         public static void ConfigureOptionPattern(this WebApplicationBuilder builder)

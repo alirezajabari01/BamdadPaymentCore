@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IReturnFromBankService
     {
-        string ReturnUrlRedirectionFromBank(string bankType);
+        string ReturnUrlRedirectionFromBank(HttpRequest Request);
     }
 }

@@ -12,13 +12,14 @@ namespace BamdadPaymentCore
 {
     public static class RegisterDependencies
     {
-        public static void RegisterSoap(this IServiceCollection services)
+        public static void RegisterSoapServices(this IServiceCollection services)
         {
             services.AddSoapCore();
             services.AddScoped<IPaymentSoapService, PaymentSoapService>();
         }
         public static void RegisterSoap(this WebApplication app)
         {
+            //app.UseSoapEndpoint<IPaymentSoapService>("/PaymentSoapService.asmx", new SoapEncoderOptions(), SoapSerializer.DataContractSerializer);
             app.UseSoapEndpoint<IPaymentSoapService>("/PaymentSoapService.asmx", new SoapEncoderOptions());
         }
     }

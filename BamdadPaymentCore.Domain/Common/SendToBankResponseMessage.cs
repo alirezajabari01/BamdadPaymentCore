@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.Common
 {
-    public class SendToBankResponseMessage
+    public class SiteErrorResponse
     {
         public const string NullOrEmptyOnlineId = "اطلاعات کامل نمی باشد با مدیر سیستم تماس حاصل نمایید.";
 
-        public const string PaymentNotValidOrAlreadyPaid = "ارتباط معتبر نمی باشد با مدیر سیستم تماس حاصل نمایید.";
+        public const string PaymentNotValid = "ارتباط معتبر نمی باشد با مدیر سیستم تماس حاصل نمایید.";
 
         public const string BankConnectionFailed = "خطا در اتصال به بانک:";
     }

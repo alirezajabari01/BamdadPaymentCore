@@ -38,12 +38,9 @@ namespace BamdadPaymentCore.Domain.Repositories
             var typeParam = new SqlParameter("@Online_Type", SqlDbType.VarChar)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Type };
 
-            var t = context.Database.SqlQuery<InsertOnlinePayResult>($"EXEC {StoreProcedureName.InsertOnlinePay} {bankIdParam}, {siteIdParam}, {priceParam}, {descParam}, {reqIdParam}, {kindParam}, {settleParam}, {typeParam}")
+            return context.Database.SqlQuery<InsertOnlinePayResult>($"EXEC {StoreProcedureName.InsertOnlinePay} {bankIdParam}, {siteIdParam}, {priceParam}, {descParam}, {reqIdParam}, {kindParam}, {settleParam}, {typeParam}")
             .ToList()
             .FirstOrDefault();
-
-            return t;
-
         }
 
         public List<SelectBankDetailResult> SelectBankDetail(SelectBankDetailParameter parameter)
@@ -135,7 +132,7 @@ namespace BamdadPaymentCore.Domain.Repositories
                 .FirstOrDefault();
         }
 
-        public UpdateOnlinePayResWithSettleResult UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter)
+        public void UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter)
         {
             var onlineId = new SqlParameter("@Online_ID", SqlDbType.Int)
             {
@@ -143,7 +140,7 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Value = parameter.Online_ID
             };
 
-            return context.Database.SqlQuery<UpdateOnlinePayResWithSettleResult>($"EXEC {StoreProcedureName.UpdateOnlinePayResWithSettle}  {onlineId}")
+            context.Database.SqlQuery<UpdateOnlinePayResWithSettleResult>($"EXEC {StoreProcedureName.UpdateOnlinePayResWithSettle}  {onlineId}")
                 .ToList()
                 .FirstOrDefault();
         }
@@ -235,6 +232,40 @@ namespace BamdadPaymentCore.Domain.Repositories
             context.Database.SqlQuery<object>($"EXEC {StoreProcedureName.insertSiteError}  {siteIdParam},{errorCodeParam}")
                 .ToList()
                 .FirstOrDefault();
+        }
+
+        public UpdateOnlinePayWithSettleResult UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ID
+            };
+
+            var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_TransactionNo
+            };
+
+            var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_OrderNo
+            };
+
+            var errorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ErrorCode
+            };
+
+            var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.CardHolderInfo
+            };
+            return context.Database.SqlQuery<UpdateOnlinePayWithSettleResult>($"EXEC {StoreProcedureName.UpdateOnlinePayFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam}").ToList().FirstOrDefault();
         }
     }
 }

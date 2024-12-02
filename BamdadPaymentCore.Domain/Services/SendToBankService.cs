@@ -25,7 +25,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentService.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId)); ;
 
-            if (paymentDetail is null || paymentDetail.Online_Status == true) return SendToBankResponseMessage.PaymentNotValidOrAlreadyPaid;
+            if (paymentDetail is null || paymentDetail.Online_Status == true) return SiteErrorResponse.PaymentNotValid;
 
             //Return Redirection URL To Already Saved Sites
             if (paymentDetail.Online_Price == 0) return paymentService.UpdateOnlinePay(onlineId, "Free", "Free", "-1", "");
@@ -36,7 +36,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (paymentDetail.Bank_MerchantID.ToString() == paymentGatewaySetting.Value.AsanMerchantId) return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
 
-            return SendToBankResponseMessage.NullOrEmptyOnlineId;
+            return SiteErrorResponse.NullOrEmptyOnlineId;
         }
 
         public string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
@@ -50,13 +50,13 @@ namespace BamdadPaymentCore.Domain.Services
              : PayWithKind(paymentDetail, onlineId, date, time, paymentGatewaySetting.Value.MelatReturnBankWithAccept, paymentGatewaySetting.Value.MelatReturnBank);
 
 
-            if (string.IsNullOrEmpty(mellatResponse)) return SendToBankResponseMessage.PaymentNotValidOrAlreadyPaid;
+            if (string.IsNullOrEmpty(mellatResponse)) return SiteErrorResponse.PaymentNotValid;
 
             string[] strArray = mellatResponse.Split(',');
 
             return strArray[0] == "0"
                 ? $"<script language='javascript' type='text/javascript'> postRefId('" + strArray[1] + "');</script> "
-                : SendToBankResponseMessage.BankConnectionFailed + strArray[0];
+                : SiteErrorResponse.BankConnectionFailed + strArray[0];
         }
 
         public string SendToPasianPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
@@ -86,6 +86,7 @@ namespace BamdadPaymentCore.Domain.Services
 
 
         #region PrivateMethods
+
         private string PayNormalMelat(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
         {
             return mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
@@ -127,6 +128,7 @@ namespace BamdadPaymentCore.Domain.Services
                 , ""
                 , null))).Body.@return;
         }
+
         #endregion
     }
 }

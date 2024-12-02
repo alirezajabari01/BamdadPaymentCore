@@ -29,7 +29,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         UpdateOnlinePayRefundResult UpdateOnlinePayRefund(UpdateOnlinePayRefundParameter parameter);
 
-        UpdateOnlinePayResWithSettleResult UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter);
+        void UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter);
 
         UpdateOnlinePaySettleFailedResult UpdateOnlinePaySettleFailed(UpdateOnlinePayResWithSettleFailedParameter parameter);
 
@@ -40,5 +40,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
         UpdateOnlinePayFailedResult UpdateOnlinePayFailed(UpdateOnlinePayFailedParameter parameter);
 
         void insertSiteError(insertSiteErrorParameter parameter);
+
+        UpdateOnlinePayWithSettleResult UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
     }
 }

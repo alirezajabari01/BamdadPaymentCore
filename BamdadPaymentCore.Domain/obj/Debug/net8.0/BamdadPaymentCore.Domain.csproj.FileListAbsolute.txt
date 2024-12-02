@@ -12,3 +12,4 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Debug\net8.0\refint\Bamdad
 C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Debug\net8.0\BamdadPaymentCore.Domain.pdb
 C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Debug\net8.0\BamdadPaymentCore.Domain.genruntimeconfig.cache
 C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Debug\net8.0\ref\BamdadPaymentCore.Domain.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Debug\net8.0\BamdadPaymentCore.Domain.sourcelink.json

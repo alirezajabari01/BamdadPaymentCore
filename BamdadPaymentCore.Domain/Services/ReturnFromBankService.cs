@@ -19,90 +19,87 @@ using BamdadPaymentCore.Domain.Common;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class ReturnFromBankService(IHttpContextAccessor httpContextAccessor, IPaymentService paymentService, IPaymentGateway mellatGatewayService,IOptions<PaymentGatewaySetting> paymentSetting,IIPGResetService _ipgService) : IReturnFromBankService
+    public class ReturnFromBankService(IHttpContextAccessor httpContextAccessor, IPaymentService paymentService, IPaymentGateway mellatGatewayService, IOptions<PaymentGatewaySetting> paymentSetting, IIPGResetService _ipgService) : IReturnFromBankService
     {
-        public string ReturnUrlRedirectionFromBank(string bankType)
+        public string ReturnUrlRedirectionFromBank(HttpRequest Request)
         {
-            if (bankType == "SaleOrderId") return ReturnedFromMellat(httpContextAccessor.HttpContext.Request);
-            if (bankType != "invoiceid") return string.Empty;
-            if (bankType == "PaygateTranId") return "";
+            if (Request.Method != HttpMethod.Get.ToString()) return "Fail";
+            
+            if (string.IsNullOrEmpty(Request.Form["SaleOrderId"])) return ReturnedFromMellat(httpContextAccessor.HttpContext.Request);
 
-            return string.Empty;
+            if (string.IsNullOrEmpty(Request.Query["invoiceid"])) return string.Empty;
+
+            if (string.IsNullOrEmpty(Request.Form["PaygateTranId"])) return ReturnedFromMellat(Request); 
+
+            return paymentService.UpdateOnlinePayFailed(Request.Query["invoiceid"], "cancel", null, "-1", "use cancel payment");
         }
 
         public string ReturnFromAsanPardalht(HttpRequest Request)
         {
+
             string localInvoiceId = Request.Query["invoiceid"];
 
-            if (string.IsNullOrEmpty(localInvoiceId)) return "اطلاعات کامل نمی باشد با مدیر سیستم تماس حاصل نمایید.";
-
+            if (string.IsNullOrEmpty(localInvoiceId)) return SiteErrorResponse.NullOrEmptyOnlineId;
 
             var paymentDetail = paymentService.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
 
-            if (paymentDetail is null) return "ارتباط معتبر نمی باشد با مدیر سیستم تماس حاصل نمایید.";
+            if (paymentDetail is null) return SiteErrorResponse.PaymentNotValid;
 
+            //Free Payment
             if (paymentDetail.Online_Price == 0) return paymentService.UpdateOnlinePay(localInvoiceId, "Free", "Free", "-1", "");
 
+            var tranResult = _ipgService.TranResult(Convert.ToInt32(paymentSetting.Value.AsanMerchantId), Convert.ToInt64(localInvoiceId), paymentDetail).Result;
 
-            var paymentResult = _ipgService.TranResult(
-                                                        Convert.ToInt32(paymentSetting.Value.AsanMerchantId),
-                                                        Convert.ToInt64(localInvoiceId), paymentDetail).Result;
-
-           
             VerifyVm verifyRes = null;
             SettleVm settleRes = null;
 
-            //if (paymentResult.ResCode != 0)
-            //    var errorCode = settleRes != null ? settleRes.ResCode : verifyRes != null ? verifyRes.ResCode : paymentResult.ResCode;
-            //this.Response.Redirect(paymentService.UpdateOnlinePayFailed(this.Request.Params["SaleOrderId"], this.Request.Params["RefId"], this.Request.Params["SaleReferenceId"], errorCode.ToString(), this.Request.Params["CardHolderInfo"]) + "?OnlineID=" + this.SaleOrderIdLabel.Text);
-            
+            string saleOrderId = localInvoiceId;
+            string refId = tranResult.RefId;
+            string saleReferenceId = tranResult.PayGateTranID.ToString();
+            string cardHolderInfo = Request.Form["CardHolderInfo"] + "?OnlineID=" + saleOrderId;
 
-                var verifyCommand = new VerifyCommand()
-                {
-                    merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-                    payGateTranId = Convert.ToUInt64(paymentResult.PayGateTranID)
-                };
-                verifyRes = _ipgService.VerifyTrx(verifyCommand, paymentDetail).Result;
+            if (tranResult.ResCode != 0)
+                return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, tranResult.ResCode.ToString(), cardHolderInfo);
 
-                if (verifyRes.ResCode == 0)
-                {
-                    var ipgService1 = new IPGResetService();
-                    settleRes = ipgService1.SettleTrx(
-                       new SettleCommand()
-                       {
-                           merchantConfigurationId = int.Parse(paymentSetting.Value.AsanMerchantId),
-                           payGateTranId = Convert.ToUInt64(paymentResult.PayGateTranID)
-                       }, paymentDetail)
-                       .Result;
 
-                    if (settleRes.ResCode == 0)
-                    {
-                        //new OnlinePay().UpdateOnlinePayResWithSettle(localInvoiceId);
-                        ////this.lblmessageresult.Text = "تراكنش با موفقيت انجام شد";
-                        //return paymentService.UpdateOnlinePay(this.SaleOrderIdLabel.Text, this.RefIdLabel.Text, this.SaleReferenceIdLabel.Text, settleRes.ResCode.ToString(), this.Request.Params["CardHolderInfo"]) + "?OnlineID=" + this.SaleOrderIdLabel.Text);
-                       // return;
-                    }
+            var verifyCommand = new VerifyCommand()
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID)
+            };
+            verifyRes = _ipgService.VerifyTrx(verifyCommand, paymentDetail).Result;
 
-                }
+            if (verifyRes.ResCode != 0) return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, verifyRes.ResCode.ToString(), cardHolderInfo);
 
-            
-          
+            var settleCommand = new SettleCommand()
+            {
+                merchantConfigurationId = int.Parse(paymentSetting.Value.AsanMerchantId),
+                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID)
+            };
+            settleRes = _ipgService.SettleTrx(settleCommand, paymentDetail).Result;
 
+            if (settleRes.ResCode != 0) return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, settleRes.ResCode.ToString(), cardHolderInfo);
+
+            //paymentService.UpdateOnlinePayResWithSettle(localInvoiceId);
+
+            //this.lblmessageresult.Text = "تراكنش با موفقيت انجام شد";
+            return paymentService.UpdateOnlinePay(saleOrderId, refId, saleReferenceId, settleRes.ResCode.ToString(), cardHolderInfo);
         }
 
         public string ReturnedFromMellat(HttpRequest Request)
         {
-            string saleOrderId = Request.Query["SaleOrderId"];
-            string refId = Request.Query["RefId"];
-            string saleReferenceId = Request.Query["SaleReferenceId"];
-            string resCode = Request.Query["ResCode"];
+            string saleOrderId = Request.Form["SaleOrderId"];
+            string refId = Request.Form["RefId"];
+            string saleReferenceId = Request.Form["SaleReferenceId"];
+            string resCode = Request.Form["ResCode"];
+            string cardHolderInfo = Request.Form["CardHolderInfo"] + "?OnlineID=" + saleOrderId;
 
             string settleResult = "0";
             string verifyResult = "0";
             string inquieryResult = "0";
 
             if (resCode != "0") if (string.IsNullOrEmpty(resCode))
-                    return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, resCode, Request.Query["CardHolderInfo"] + "?OnlineID=" + saleOrderId);
+                    return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, resCode, cardHolderInfo);
 
             SelectBankDetailResult BankDetail = paymentService.SelectBankDetail(new SelectBankDetailParameter(saleOrderId));
 
@@ -126,17 +123,17 @@ namespace BamdadPaymentCore.Domain.Services
                      mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
             if (inquieryResult != "0")
-                return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, verifyResult, Request.Query["CardHolderInfo"] + "?OnlineID=" + saleOrderId);
+                return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, verifyResult, cardHolderInfo);
 
             settleResult = mellatGatewayService.bpSettleRequest(new bpSettleRequest(new bpSettleRequestBody(
                  mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
                  mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
             if (settleResult == "0" || settleResult == "45")
-                return paymentService.UpdateOnlinePay(saleOrderId, refId, saleReferenceId, settleResult, Request.Query["CardHolderInfo"] + "?OnlineID=" + saleOrderId);
+                return paymentService.UpdateOnlinePay(saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
 
 
-            return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, settleResult, Request.Query["CardHolderInfo"] + "?OnlineID=" + saleOrderId);
+            return paymentService.UpdateOnlinePayFailed(saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
         }
 
         public record ReturnFromBankViewModel(string RefId, string saleReferenceId, string resCode, string Message);

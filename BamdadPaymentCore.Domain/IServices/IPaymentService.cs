@@ -12,6 +12,8 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IPaymentService
     {
+        void UpdateOnlinePayResWithSettle(string onlineId);
+
         string GetOnlineId(GetOnlineIdRequest request);
 
         string GetOnlineIdkind(GetOnlineIdkindRequest request);
@@ -33,5 +35,7 @@ namespace BamdadPaymentCore.Domain.IServices
         SelectBankDetailResult SelectBankDetail(SelectBankDetailParameter request);
 
         string UpdateOnlinePayFailed(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "");
+
+        string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
     }
 }

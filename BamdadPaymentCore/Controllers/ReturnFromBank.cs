@@ -4,15 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BamdadPaymentCore.Controllers
 {
-    public class ReturnFromBank(IReturnFromBankService returnFromBankService, IHttpContextAccessor httpContextAccessor, IPaymentService paymentService) : Controller
+    public class ReturnFromBank(IReturnFromBankService returnFromBankService) : Controller
     {
         public IActionResult Index()
         {
-            //TODO ViewBags
-            if (Request.Method != HttpMethod.Post.ToString()) return View("fail");
+            var t = Request.Form["ReturningParams"];
 
-            var res = returnFromBankService.ReturnUrlRedirectionFromBank(Request.QueryString.Value);
+            //ViewBag.SaleReferenceId = Request.Form["SaleReferenceId"];
+            //ViewBag.RefId = Request.Form["RefId"];
+            //ViewBag.SaleOrderId = Request.Form["SaleOrderId"];
+            //ViewBag.ResCode = Request.Form["ResCode"];
 
+            var res = returnFromBankService.ReturnUrlRedirectionFromBank(Request);
+            if(res != string.Empty)
+            {
+                ViewBag.PaymentStatusMessage = "تراكنش با موفقيت انجام شد";
+            }
             return Redirect(res);
         }
     }

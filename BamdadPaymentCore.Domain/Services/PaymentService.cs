@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Net.Http;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using XAct.Users;
@@ -30,6 +31,7 @@ namespace BamdadPaymentCore.Domain.Services
         private const string FillParameterFailResponse = "-3,FillParameter";
 
         #endregion
+
 
         public string GetOnlineId(GetOnlineIdRequest request)
         => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId, "0");
@@ -71,6 +73,12 @@ namespace BamdadPaymentCore.Domain.Services
 
         public SelectBankDetailResult SelectBankDetail(SelectBankDetailParameter request)
         => repository.SelectBankDetail(request).FirstOrDefault();
+
+        public void UpdateOnlinePayResWithSettle(string onlineId) 
+            => repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Convert.ToInt32(onlineId)));
+
+        public string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter)
+        => repository.UpdateOnlinePayWithSettle(parameter).Site_ReturnUrl;
 
         #region PrivateMethods
 
@@ -225,7 +233,6 @@ namespace BamdadPaymentCore.Domain.Services
 
             return result;
         }
-
 
         #endregion
     }
