@@ -39,7 +39,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         UpdateOnlinePayFailedResult UpdateOnlinePayFailed(UpdateOnlinePayFailedParameter parameter);
 
-        void insertSiteError(insertSiteErrorParameter parameter);
+        void insertSiteError(InsertSiteErrorParameter parameter);
 
         UpdateOnlinePayWithSettleResult UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
     }

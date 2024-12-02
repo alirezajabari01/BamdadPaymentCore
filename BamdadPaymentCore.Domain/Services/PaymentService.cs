@@ -80,6 +80,10 @@ namespace BamdadPaymentCore.Domain.Services
         public string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter)
         => repository.UpdateOnlinePayWithSettle(parameter).Site_ReturnUrl;
 
+        public void InsertSiteError(InsertSiteErrorParameter request)
+        => repository.insertSiteError(request);
+
+
         #region PrivateMethods
 
         private string GetSiteIp() => httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -95,11 +99,12 @@ namespace BamdadPaymentCore.Domain.Services
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(userName, password);
             if (siteAuthenticationResult is null) return AuthenticationFailResponse;
 
-            SelectBankIdResult bankId = repository.SelectBankID
-                (new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID)));
+           var bankId = repository.SelectBankID
+                    (new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID))).Bank_ID;
 
-            return repository.InsertOnlinePay(new InsertOnlinePayParameter(bankId.Bank_ID, siteAuthenticationResult.Site_ID, ConvertToInt(onlinePrice), desc, ConvertToInt(reqId),
-                ConvertToInt(kind), 1, onlineType)).OnlineID.ToString() ?? FillParameterFailResponse;
+            return string.IsNullOrEmpty(onlinePrice) ?
+                repository.InsertOnlinePay(new InsertOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID, ConvertToInt(onlinePrice), desc, ConvertToInt(reqId),
+                   ConvertToInt(kind), 1, onlineType)).OnlineID.ToString(): FillParameterFailResponse;
         }
 
         public DataTable Authenticationfailed()

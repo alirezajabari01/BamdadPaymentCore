@@ -37,5 +37,7 @@ namespace BamdadPaymentCore.Domain.IServices
         string UpdateOnlinePayFailed(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "");
 
         string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
+
+        void InsertSiteError(InsertSiteErrorParameter request);
     }
 }

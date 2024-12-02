@@ -221,7 +221,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             return context.Database.SqlQuery<UpdateOnlinePayFailedResult>($"EXEC {StoreProcedureName.UpdateOnlinePay}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam}").ToList().FirstOrDefault();
         }
 
-        public void insertSiteError(insertSiteErrorParameter parameter)
+        public void insertSiteError(InsertSiteErrorParameter parameter)
         {
             var siteIdParam = new SqlParameter("@ErrorMessage", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.ErrorMessage };
