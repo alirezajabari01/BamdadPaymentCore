@@ -12,6 +12,7 @@ namespace BamdadPaymentCore.SOAP
 {
     public class PaymentSoapService(IPaymentService paymentService) : IPaymentSoapService
     {
+       
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId)
         {
             string result = string.Empty;
@@ -73,6 +74,7 @@ namespace BamdadPaymentCore.SOAP
             return onlineStatus;
         }
 
+        // Must Be Changed To Cancel 
         public bool ReqRefund(string username, string pass, string onlineId, string refundAmount)
         {
             bool result = false;
@@ -87,6 +89,7 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
+        // This One Was On Mellat But Now On Asan
         public bool ReqReversal(string username, string pass, string onlineId)
         {
             bool result = false;
@@ -102,11 +105,15 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
+        //UseLess
+
         public bool ReqReversal(int merchantConfigurationID, string encryptedCredentials, ulong payGateTranID)
         {
             throw new NotImplementedException();
         }
 
+
+        //On Mellat
         public DataTable ReqSettleOnline(string username, string pass, string onlineId)
         {
             DataTable onlineStatus = new DataTable()
@@ -124,6 +131,7 @@ namespace BamdadPaymentCore.SOAP
             return onlineStatus;
         }
 
+        //Asan
         public bool RequestReversal(string username, string pass, string onlineId)
         {
             bool result = false;
@@ -138,6 +146,7 @@ namespace BamdadPaymentCore.SOAP
             return false;
         }
 
+        //On Asan
         public DataTable RequestSettleOnline(string username, string pass, string onlineId)
         {
             DataTable dataTable = new DataTable()
@@ -155,9 +164,11 @@ namespace BamdadPaymentCore.SOAP
             return dataTable;
         }
 
+        // Asan 
         public bool ReqVerify(string username, string pass, string onlineId)
         => paymentService.ReqVerify(new VerifyRequest(username, pass, onlineId));
 
+        //TODO Not Yet Completed
         public bool Cancel(string username, string pass, string onlineId)
         {
             bool result = false;
