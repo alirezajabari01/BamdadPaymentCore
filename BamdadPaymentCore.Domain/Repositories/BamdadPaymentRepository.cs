@@ -184,7 +184,14 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Direction = ParameterDirection.Input,
                 Value = parameter.CardHolderInfo
             };
-            return context.Database.SqlQuery<UpdateOnlinePayResult>($"EXEC {StoreProcedureName.UpdateOnlinePayFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam}").ToList().FirstOrDefault();
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber
+            };
+
+            return context.Database.SqlQuery<UpdateOnlinePayResult>($"EXEC {StoreProcedureName.UpdateOnlinePayFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault();
         }
 
         public UpdateOnlinePayFailedResult UpdateOnlinePayFailed(UpdateOnlinePayFailedParameter parameter)
@@ -218,7 +225,14 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Direction = ParameterDirection.Input,
                 Value = parameter.CardHolderInfo
             };
-            return context.Database.SqlQuery<UpdateOnlinePayFailedResult>($"EXEC {StoreProcedureName.UpdateOnlinePay}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam}").ToList().FirstOrDefault();
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber
+            };
+
+            return context.Database.SqlQuery<UpdateOnlinePayFailedResult>($"EXEC {StoreProcedureName.UpdateOnlinePayFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault()!;
         }
 
         public void insertSiteError(InsertSiteErrorParameter parameter)
@@ -266,6 +280,91 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Value = parameter.CardHolderInfo
             };
             return context.Database.SqlQuery<UpdateOnlinePayWithSettleResult>($"EXEC {StoreProcedureName.UpdateOnlinePayFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam}").ToList().FirstOrDefault();
+        }
+
+        public UpdateOnlinePayResult UpdateOnlinePayment(UpdateOnlinePayParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ID
+            };
+
+            var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_TransactionNo
+            };
+
+            var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_OrderNo
+            };
+
+            var errorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ErrorCode
+            };
+
+            var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.CardHolderInfo
+            };
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber,
+                IsNullable = true
+            };
+
+            return context.Database.SqlQuery<UpdateOnlinePayResult>($"EXEC {StoreProcedureName.UpdateOnlinePayment}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault();
+        }
+
+        public UpdateOnlinePayFailedResult UpdateOnlinePaymentFailed(UpdateOnlinePayFailedParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ID
+            };
+
+            var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_TransactionNo
+            };
+
+            var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_OrderNo
+            };
+
+            var errorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ErrorCode
+            };
+
+            var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.CardHolderInfo
+            };
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
+                IsNullable = true , 
+                
+            };
+
+            return context.Database.SqlQuery<UpdateOnlinePayFailedResult>($"EXEC {StoreProcedureName.UpdateOnlinePaymentFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault();
         }
     }
 }

@@ -9,7 +9,12 @@ using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 using bpm.shaparak.ir;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.Options;
 using Nobisoft.Core.Extensions;
+using RestService.models.reverse;
+using RestService.models.settle;
+using RestService.models.verify;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -23,7 +28,8 @@ using XSystem.Security.Cryptography;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class PaymentService(IBamdadPaymentRepository repository, IHttpContextAccessor httpContextAccessor, IPaymentGateway mellatGateway) : IPaymentService
+    public class PaymentService(IBamdadPaymentRepository repository, IHttpContextAccessor httpContextAccessor, IPaymentGateway mellatGateway,
+        IAsanResetService asanRestService, IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IPaymentService
     {
         #region PrivateFields
 
@@ -32,6 +38,9 @@ namespace BamdadPaymentCore.Domain.Services
 
         #endregion
 
+        public string CancelPayment(string onlineId)
+            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, ConvertToInt(onlineId), "cancel", "Failed", -1, "use cancel payment"))
+            .Site_ReturnUrl;
 
         public string GetOnlineId(GetOnlineIdRequest request)
         => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId, "0");
@@ -62,29 +71,118 @@ namespace BamdadPaymentCore.Domain.Services
             return repository.SelectOnlinePay(new SelectOnlinePayParameter(request.OnlineId)).ListToDataTable();
         }
 
-        public SelectPaymentDetailResult SelectPaymentDetail(SelectPaymentDetailParameter onlineId)
-        => repository.SelectPaymentDetail(onlineId);
-
-        public string UpdateOnlinePay(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "")
-       => repository.UpdateOnlinePay(new UpdateOnlinePayParameter(ConvertToInt(onlineId), transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo)).Site_ReturnUrl;
-
-        public string UpdateOnlinePayFailed(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "")
-      => repository.UpdateOnlinePayFailed(new UpdateOnlinePayFailedParameter(ConvertToInt(onlineId), transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo)).Site_ReturnUrl;
-
-        public SelectBankDetailResult SelectBankDetail(SelectBankDetailParameter request)
-        => repository.SelectBankDetail(request).FirstOrDefault();
-
-        public void UpdateOnlinePayResWithSettle(string onlineId) 
-            => repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Convert.ToInt32(onlineId)));
-
-        public string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter)
-        => repository.UpdateOnlinePayWithSettle(parameter).Site_ReturnUrl;
+        public string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo)
+      => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber, ConvertToInt(onlineId), transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo)).Site_ReturnUrl;
 
         public void InsertSiteError(InsertSiteErrorParameter request)
         => repository.insertSiteError(request);
 
+        public string FreePayment(string onlineId)
+        => repository.UpdateOnlinePayment(new UpdateOnlinePayParameter("", ConvertToInt(onlineId), "Free", "Free", -1, "")).Site_ReturnUrl;
+
+        public bool ReqVerify(VerifyRequest request)
+        {
+            SiteAuthenticationResult? siteAuthenticationResult = Authenticate(request.Username, request.Password);
+            if (siteAuthenticationResult is null) return false;
+
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(request.OnlineId));
+            var transactionResult = asanRestService.TransactionResult(ConvertToInt(paymentGatewaySetting.Value.AsanMerchantId), long.Parse(request.OnlineId), paymentDetail).Result;
+
+            if (transactionResult.ResCode != 0) return false;
+
+            var verifyCommand = new VerifyCommand()
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+                payGateTranId = Convert.ToUInt64(transactionResult.PayGateTranID)
+            };
+            var verifyRes = asanRestService.VerifyTransaction(verifyCommand, paymentDetail).Result;
+
+            if (verifyRes.ResCode != 0) return false;
+
+            return true;
+        }
+
+        public DataTable RequestSettleOnline(SettleOnlineRequest request)
+        {
+            SiteAuthenticationResult? siteAuthenticationResult = Authenticate(request.Username, request.Password);
+            if (siteAuthenticationResult is null) return Authenticationfailed();
+
+            Settle(request.OnlineId);
+
+            return GetOnlineStatus(new GetOnlineStatusParameter(request.Username, request.Password, request.OnlineId));
+
+        }
+
+        public string Settle(string onlineId)
+        {
+            string localInvoiceId = onlineId;
+
+            if (string.IsNullOrEmpty(localInvoiceId)) return SiteErrorResponse.NullOrEmptyOnlineId;
+
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
+
+            if (paymentDetail is null) return SiteErrorResponse.PaymentNotValid;
+
+            //Free Payment
+            if (paymentDetail.Online_Price == 0) return FreePayment(localInvoiceId);
+
+            var tranResult = asanRestService.TransactionResult(Convert.ToInt32(paymentGatewaySetting.Value.AsanMerchantId), Convert.ToInt64(localInvoiceId), paymentDetail).Result;
+
+            string saleOrderId = localInvoiceId;
+            string refId = tranResult.RefId;
+            string saleReferenceId = tranResult.PayGateTranID.ToString();
+            string cardHolderInfo = tranResult.CardNumber;
+            string referenceNumber = tranResult.Rrn;
+
+            if (tranResult.ResCode != 0)
+                return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId, tranResult.ResCode.ToString(), cardHolderInfo);
+
+
+            var verifyCommand = new VerifyCommand()
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID)
+            };
+            VerifyVm verifyRes = asanRestService.VerifyTransaction(verifyCommand, paymentDetail).Result;
+
+            if (verifyRes.ResCode != 0) return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId,
+                verifyRes.ResCode.ToString(), cardHolderInfo);
+
+            var settleCommand = new SettleCommand()
+            {
+                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
+                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID)
+            };
+            SettleVm settleRes = asanRestService.SettleTransaction(settleCommand, paymentDetail).Result;
+
+            if (settleRes.ResCode != 0) return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId,
+                settleRes.ResCode.ToString(), cardHolderInfo);
+
+            repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(localInvoiceId));
+
+            return repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, settleRes.ResCode, cardHolderInfo)).Site_ReturnUrl;
+        }
+
+        public bool RequestReversal(string username, string pass, string onlineId)
+        {
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+
+            var transactionResult = asanRestService.TransactionResult(Convert.ToInt32(paymentGatewaySetting.Value.AsanMerchantId), long.Parse(onlineId), paymentDetail)
+                .Result;
+
+            if (transactionResult.ResCode != 0) throw new Exception(transactionResult.ResMessage);
+
+            var reverseResult = asanRestService.ReverseTransaction(new ReverseCommand(), paymentDetail.Bank_User, paymentDetail.Bank_Pass).Result;
+
+            if(reverseResult.ResCode != 0) throw new Exception(reverseResult.ResMessage);
+
+            return true;
+        }
 
         #region PrivateMethods
+
+        private DataTable GetOnlineStatus(string onlineId)
+            => repository.SelectOnlinePay(new SelectOnlinePayParameter(onlineId)).ListToDataTable();
 
         private string GetSiteIp() => httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
 
@@ -99,12 +197,12 @@ namespace BamdadPaymentCore.Domain.Services
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(userName, password);
             if (siteAuthenticationResult is null) return AuthenticationFailResponse;
 
-           var bankId = repository.SelectBankID
-                    (new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID))).Bank_ID;
+            var bankId = repository.SelectBankID
+                     (new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID))).Bank_ID;
 
-            return string.IsNullOrEmpty(onlinePrice) ?
+            return !string.IsNullOrEmpty(onlinePrice) ?
                 repository.InsertOnlinePay(new InsertOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID, ConvertToInt(onlinePrice), desc, ConvertToInt(reqId),
-                   ConvertToInt(kind), 1, onlineType)).OnlineID.ToString(): FillParameterFailResponse;
+                   ConvertToInt(kind), 1, onlineType)).OnlineID.ToString() : FillParameterFailResponse;
         }
 
         public DataTable Authenticationfailed()
@@ -125,7 +223,7 @@ namespace BamdadPaymentCore.Domain.Services
             bool result = false;
             string errorCode = string.Empty;
 
-            SelectBankDetailResult SelectBankDetailResult = SelectBankDetail(new SelectBankDetailParameter(onlineId));
+            SelectBankDetailResult SelectBankDetailResult = repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).SingleOrDefault();
 
             SelectOnlinePayDetailResult SelectOnlinePayDetailResult = repository.SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
 
@@ -149,7 +247,7 @@ namespace BamdadPaymentCore.Domain.Services
             bool result = false;
             string errorCode = string.Empty;
 
-            SelectBankDetailResult SelectBankDetailResult = SelectBankDetail(new SelectBankDetailParameter(onlineId));
+            SelectBankDetailResult SelectBankDetailResult = repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).SingleOrDefault();
 
             SelectOnlinePayDetailResult SelectOnlinePayDetailResult = repository.SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
 
@@ -182,6 +280,22 @@ namespace BamdadPaymentCore.Domain.Services
             return result;
         }
 
+        public bool Cancel(string onlineId)
+        {
+            var paymentDetail =  repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+            if(paymentDetail == null) return false;
+
+            var tranResult = asanRestService.TransactionResult(Convert.ToInt32(paymentGatewaySetting.Value.AsanMerchantId), Convert.ToInt64(localInvoiceId), paymentDetail).Result;
+
+            var cancelResult = asanRestService.CancelTransaction(new CancelCommand(ConvertToInt(paymentDetail.Bank_MerchantID), (ulong)tranResult.PayGateTranID), paymentDetail.Bank_User, paymentDetail.Bank_Pass).Result;
+
+            if (cancelResult.ResCode != 800) throw new Exception(cancelResult.ResMessage);
+
+            //TODO
+            
+            return true;
+        }
+
         public bool SettleRequest(string onlineId)
         {
             //TODO SiteError
@@ -191,9 +305,9 @@ namespace BamdadPaymentCore.Domain.Services
             string verifyResult = "0";
             string inquieryResult = "0";
 
-            SelectBankDetailResult SelectBankDetailResult = repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).FirstOrDefault();
+            var SelectBankDetailResult = repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).FirstOrDefault();
 
-            SelectOnlinePayDetailResult SelectOnlinePayDetailResult = repository.SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
+            var SelectOnlinePayDetailResult = repository.SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
 
             var mellatRequest = new
             {

@@ -2,6 +2,7 @@
 {
     public record UpdateOnlinePayFailedParameter
    (
+        string ReferenceNumber,
         int Online_ID,
         string Online_TransactionNo = "Failed",
         string Online_OrderNo = "Failed",

@@ -31,5 +31,17 @@ namespace BamdadPaymentCore.SOAP
 
         [OperationContract]
         public bool ReqRefund(string username, string pass, string onlineId, string refundAmount);
+
+        [OperationContract]
+        public bool RequestReversal(string username, string pass, string onlineId);
+
+        [OperationContract]
+        public bool ReqVerify(string username, string pass, string onlineId);
+
+        [OperationContract]
+        public DataTable RequestSettleOnline(string username, string pass, string onlineId);
+
+        [OperationContract]
+        public 
     }
 }

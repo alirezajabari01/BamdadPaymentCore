@@ -12,11 +12,11 @@ namespace BamdadPaymentCore.Controllers
             ViewBag.SaleReferenceId = Request.Query["SaleReferenceId"];
             ViewBag.SaleReferenceId = Request.Query["CardHolderInfo"];
             ViewBag.ResCode = Request.Query["ResCode"];
-
+            ViewBag.ReferenceNumber = "";
             var res = "";
             if (Request.HasFormContentType)
             {
-                res = service.RedirectToUrl(ViewBag.SaleOrderId, ViewBag.RefId, ViewBag.SaleReferenceId, ViewBag.SaleReferenceId, ViewBag.ResCode);
+                res = service.RedirectToUrl(ViewBag.ReferenceNumber, ViewBag.SaleOrderId, ViewBag.RefId, ViewBag.SaleReferenceId, ViewBag.SaleReferenceId, ViewBag.ResCode);
             }
             return Redirect(res);
         }

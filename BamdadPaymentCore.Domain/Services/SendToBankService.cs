@@ -1,4 +1,5 @@
 ﻿using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
@@ -15,20 +16,20 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IIPGResetService iPGResetService
-        , IPaymentGateway mellatPaymentGateway) : ISendToBankService
+    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanResetService asanRestService
+        , IPaymentGateway mellatPaymentGateway,IBamdadPaymentRepository paymentRepository) : ISendToBankService
     {
 
         public string SendToBank(string onlineId)
         {
             SelectPaymentDetailResult paymentDetail = null;
 
-            if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentService.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId)); ;
+            if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId)); ;
 
             if (paymentDetail is null || paymentDetail.Online_Status == true) return SiteErrorResponse.PaymentNotValid;
 
             //Return Redirection URL To Already Saved Sites
-            if (paymentDetail.Online_Price == 0) return paymentService.UpdateOnlinePay(onlineId, "Free", "Free", "-1", "");
+            if (paymentDetail.Online_Price == 0) return paymentService.FreePayment(onlineId);
 
             if (paymentDetail.Bank_MerchantID.ToString() == paymentGatewaySetting.Value.MelatMerchantId) return SendToMellatPaymentGateway(paymentDetail, onlineId);
 
@@ -76,7 +77,7 @@ namespace BamdadPaymentCore.Domain.Services
 
 
 
-            var tokenResult = iPGResetService.GetToken<RequestCommand, RequestTokenVm>(paymentToken, paymentDetail).Result;
+            var tokenResult = asanRestService.GetToken<RequestCommand, RequestTokenVm>(paymentToken, paymentDetail).Result;
 
             if (tokenResult.ResCode == 0)
                 return RedirectWithPost.PreparePostForm(paymentGatewaySetting.Value.AsanpardakhtGateWay, new Dictionary<string, string> { { "RefId", tokenResult.RefId } });

@@ -14,18 +14,20 @@ using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 
 namespace BamdadPaymentCore.Domain.IServices
 {
-    public interface IIPGResetService
+    public interface IAsanResetService
     {
         public Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
             where TRequest : ITokenCommand
             where TResult : class, ITokenVm, new();
 
-        public Task<VerifyVm> VerifyTrx(VerifyCommand verifyCommand, SelectPaymentDetailResult paymentDetail);
+        public Task<VerifyVm> VerifyTransaction(VerifyCommand verifyCommand, SelectPaymentDetailResult paymentDetail);
 
-        public Task<SettleVm> SettleTrx(SettleCommand settleCommand, SelectPaymentDetailResult paymentDetail);
+        public Task<SettleVm> SettleTransaction(SettleCommand settleCommand, SelectPaymentDetailResult paymentDetail);
 
-        public Task<ReverseVm> ReverseTrx(ReverseCommand reverseCommand);
+        public Task<ReverseVm> ReverseTransaction(ReverseCommand reverseCommand, string usr, string pwd);
 
-        public Task<PaymentResultVm> TranResult(int merchantConfigId, long localInvoiceId, SelectPaymentDetailResult paymentDetail);
+        public Task<PaymentResultVm> TransactionResult(int merchantConfigId, long localInvoiceId, SelectPaymentDetailResult paymentDetail);
+
+        public Task<CancelResultVm> CancelTransaction(CancelCommand command, string usr, string pwd);
     }
 }

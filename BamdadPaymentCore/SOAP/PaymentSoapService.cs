@@ -92,13 +92,19 @@ namespace BamdadPaymentCore.SOAP
             bool result = false;
             try
             {
-                result = paymentService.ReqReversal(ReqReversalRequestMappe.ToReqReversalRequest(username, pass, onlineId));
+                //result = paymentService.ReqReversal(ReqReversalRequestMappe.ToReqReversalRequest(username, pass, onlineId));
+                result = paymentService.RequestReversal(username, pass, onlineId);
             }
             catch (Exception ex)
             {
                 paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source.ToString()));
             }
             return result;
+        }
+
+        public bool ReqReversal(int merchantConfigurationID, string encryptedCredentials, ulong payGateTranID)
+        {
+            throw new NotImplementedException();
         }
 
         public DataTable ReqSettleOnline(string username, string pass, string onlineId)
@@ -117,6 +123,54 @@ namespace BamdadPaymentCore.SOAP
             }
             return onlineStatus;
         }
-         
+
+        public bool RequestReversal(string username, string pass, string onlineId)
+        {
+            bool result = false;
+            try
+            {
+                result = paymentService.RequestReversal(username, pass, onlineId);
+            }
+            catch (Exception ex)
+            {
+                paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+            }
+            return false;
+        }
+
+        public DataTable RequestSettleOnline(string username, string pass, string onlineId)
+        {
+            DataTable dataTable = new DataTable()
+            {
+                TableName = "ResSettleOnlinePayStatus"
+            };
+            try
+            {
+                dataTable = paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
+            }
+            catch (Exception ex)
+            {
+                paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+            }
+            return dataTable;
+        }
+
+        public bool ReqVerify(string username, string pass, string onlineId)
+        => paymentService.ReqVerify(new VerifyRequest(username, pass, onlineId));
+
+        public bool Cancel(string username, string pass, string onlineId)
+        {
+            bool result = false;
+            try
+            {
+               // result = paymentService.CancelPayment(onlineId);
+            }
+            catch(Exception ex)
+            {
+                paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+            }
+
+            return result;
+        }
     }
 }

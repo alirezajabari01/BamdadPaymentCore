@@ -8,7 +8,13 @@ namespace BamdadPaymentCore.Controllers
     {
         public IActionResult Index()
         {
-            var t = Request.Form["ReturningParams"];
+            // Wrong is GET
+            // Correct IS POST
+
+            if (Request.Method == "GET") { ViewBag.SaleReferenceId = ""; ViewBag.PaymentStatusMessage = "enseraf"; return View(); }
+
+            var ts = Request.Method;
+            //var t = Request.Form["ReturningParams"];
 
             //ViewBag.SaleReferenceId = Request.Form["SaleReferenceId"];
             //ViewBag.RefId = Request.Form["RefId"];
@@ -16,7 +22,7 @@ namespace BamdadPaymentCore.Controllers
             //ViewBag.ResCode = Request.Form["ResCode"];
 
             var res = returnFromBankService.ReturnUrlRedirectionFromBank(Request);
-            if(res != string.Empty)
+            if (res != string.Empty)
             {
                 ViewBag.PaymentStatusMessage = "تراكنش با موفقيت انجام شد";
             }

@@ -12,7 +12,18 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IPaymentService
     {
-        void UpdateOnlinePayResWithSettle(string onlineId);
+        bool RequestReversal(string username, string pass, string onlineId);
+
+        string Settle(string onlineId);
+
+        DataTable RequestSettleOnline(SettleOnlineRequest request);
+
+        bool ReqVerify(VerifyRequest request);
+
+        string CancelPayment(string onlineId);
+
+        string FreePayment(string onlineId);
+
 
         string GetOnlineId(GetOnlineIdRequest request);
 
@@ -28,16 +39,8 @@ namespace BamdadPaymentCore.Domain.IServices
 
         DataTable ReqSettleOnline(ReqSettleOnlineRequest request);
 
-        SelectPaymentDetailResult SelectPaymentDetail(SelectPaymentDetailParameter onlineId);
-
-        string UpdateOnlinePay(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "");
-
-        SelectBankDetailResult SelectBankDetail(SelectBankDetailParameter request);
-
-        string UpdateOnlinePayFailed(string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo = "");
-
-        string UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
-
         void InsertSiteError(InsertSiteErrorParameter request);
+        
+        string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo);
     }
 }
