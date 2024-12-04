@@ -21,25 +21,18 @@ using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 
 namespace RestService
 {
-    public class IPGResetService : IAsanResetService
+    public class AsanResetService : IAsanResetService
     {
         #region PrivateFields
         private const string REST_URL = "https://ipgrest.asanpardakht.ir/";
-        //private const string REST_URL = "http://localhost:57261";
         #endregion
 
 
-        public async Task<ReverseVm> ReverseTransaction(ReverseCommand reverseCommand,string usr,string pwd)
+        public async Task<ReverseVm> ReverseTransaction(AsanRestRequest requst)
         {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri(REST_URL),
-                Timeout = TimeSpan.FromSeconds(20)
-            };
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("usr", usr);
-            client.DefaultRequestHeaders.Add("pwd", pwd);
+            var client = CreateClient(requst.BankUser, requst.BankPassword);
+
+            var reverseCommand = new ReverseCommand { payGateTranId = requst.payGateTranId, merchantConfigurationId = requst.merchantConfigurationId };
 
             var content = new StringContent(JsonConvert.SerializeObject(reverseCommand), Encoding.UTF8, "application/json");
 
@@ -90,7 +83,7 @@ namespace RestService
         {
             var refid = string.Empty;
 
-            var client = CreateClient(paymentDetail);
+            var client = CreateClient(paymentDetail.Bank_User,paymentDetail.Bank_Pass);
 
             var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
@@ -124,9 +117,14 @@ namespace RestService
             }
         }
 
-        public async Task<VerifyVm> VerifyTransaction(VerifyCommand verifyCommand, SelectPaymentDetailResult paymentDetail)
+        public async Task<VerifyVm> VerifyTransaction(AsanRestRequest requst)
         {
-            var client = CreateClient(paymentDetail);
+            VerifyCommand verifyCommand = new VerifyCommand
+            {
+                merchantConfigurationId = requst.merchantConfigurationId,
+                payGateTranId = requst.payGateTranId
+            };
+            var client = CreateClient(requst.BankUser, requst.BankPassword);
 
             var content = new StringContent(JsonConvert.SerializeObject(verifyCommand), Encoding.UTF8, "application/json");
 
@@ -173,10 +171,14 @@ namespace RestService
             }
         }
 
-        public async Task<SettleVm> SettleTransaction(SettleCommand settleCommand, SelectPaymentDetailResult paymentDetail)
+        public async Task<SettleVm> SettleTransaction(AsanRestRequest requst)
         {
-            var client = CreateClient(paymentDetail);
-
+            var client = CreateClient(requst.BankUser, requst.BankPassword);
+            SettleCommand settleCommand = new SettleCommand()
+            {
+                merchantConfigurationId = requst.merchantConfigurationId,
+                payGateTranId = requst.payGateTranId
+            };
             var content = new StringContent(JsonConvert.SerializeObject(settleCommand), Encoding.UTF8, "application/json");
 
             try
@@ -222,14 +224,15 @@ namespace RestService
             }
         }
 
-        public async Task<PaymentResultVm> TransactionResult(int merchantConfigId, long localInvoiceId, SelectPaymentDetailResult paymentDetail)
+        public async Task<PaymentResultVm> TransactionResult(TransactionResultRequest request)
         {
-            var client = CreateClient(paymentDetail);
+            var client = CreateClient(request.bankUser, request.bankPassword);
+
             PaymentResultVm paymentResultVm;
             try
             {
-                var responseMessage = client.GetAsync($"v1/TranResult?LocalInvoiceId={localInvoiceId}" +
-                                                             $"&MerchantConfigurationId={merchantConfigId}",
+                var responseMessage = client.GetAsync($"v1/TranResult?LocalInvoiceId={request.localInvoiceId}" +
+                                                             $"&MerchantConfigurationId={request.merchantConfigId}",
                                                               new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult();
                 switch ((int)responseMessage.StatusCode)
                 {
@@ -263,19 +266,15 @@ namespace RestService
             }
         }
 
-        public async Task<CancelResultVm> CancelTransaction(CancelCommand command, string usr, string pwd)
+        public async Task<CancelResultVm> CancelTransaction(AsanRestRequest requst)
         {
-            var client = new HttpClient
+            var client = CreateClient(requst.BankUser,requst.BankPassword);
+            CancelCommand cancelCommand = new CancelCommand()
             {
-                BaseAddress = new Uri(REST_URL),
-                Timeout = TimeSpan.FromSeconds(20)
+                merchantConfigurationId = requst.merchantConfigurationId,
+                payGateTranId = requst.payGateTranId
             };
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("usr", usr);
-            client.DefaultRequestHeaders.Add("pwd", pwd);
-
-            var content = new StringContent(JsonConvert.SerializeObject(command), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonConvert.SerializeObject(cancelCommand), Encoding.UTF8, "application/json");
             try
             {
                 var responseMessage = await client.PostAsync($"v1/Cancel", content,
@@ -324,7 +323,8 @@ namespace RestService
         }
 
         #region PrivateMethods
-        private HttpClient CreateClient(SelectPaymentDetailResult paymentDetail)
+
+        private HttpClient CreateClient(string bankUser, string bankPass)
         {
             var client = new HttpClient
             {
@@ -333,8 +333,8 @@ namespace RestService
             };
             client.DefaultRequestHeaders.Accept.Clear();
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("usr", paymentDetail.Bank_User);
-            client.DefaultRequestHeaders.Add("pwd", paymentDetail.Bank_Pass);
+            client.DefaultRequestHeaders.Add("usr", bankUser);
+            client.DefaultRequestHeaders.Add("pwd", bankPass);
 
             return client;
         }

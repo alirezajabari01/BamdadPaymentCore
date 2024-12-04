@@ -17,9 +17,9 @@ namespace BamdadPaymentCore.Controllers
         public IActionResult Index()
         {
 
-           var t = asanResetService.TransactionResult(Convert.ToInt32(paymentGatewaySetting.Value.AsanMerchantId), 241310,
-                bamdadPaymentRepository.SelectPaymentDetail(new Domain.StoreProceduresModels.Parameters.SelectPaymentDetailParameter
-                (241310.ToString()))).Result;
+           //var t = asanResetService.TransactionResult(Convert.ToInt32(paymentGatewaySetting.Value.AsanMerchantId), 241310,
+           //     bamdadPaymentRepository.SelectPaymentDetail(new Domain.StoreProceduresModels.Parameters.SelectPaymentDetailParameter
+           //     (241310.ToString()))).Result;
            // bamdadPaymentRepository.UpdateOnlinePayment(
            //     new Domain.StoreProceduresModels.Parameters.UpdateOnlinePayParameter(t.Rrn, 241310, t.RefId, t.PayGateTranID.ToString(), 0, t.CardNumber));
             //var t = paymentService.SelectPaymentDetail(new Domain.StoreProceduresModels.Parameters.SelectPaymentDetailParameter("241297"));

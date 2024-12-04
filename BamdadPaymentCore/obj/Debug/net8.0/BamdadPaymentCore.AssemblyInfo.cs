@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BamdadPaymentCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e57be2ac4bb3bbda5e33e33810ab21563d15b733")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+75d8b7252e0f19837e5de3da8238851bc7f7e889")]
 [assembly: System.Reflection.AssemblyProductAttribute("BamdadPaymentCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BamdadPaymentCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

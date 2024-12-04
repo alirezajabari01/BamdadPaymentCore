@@ -20,14 +20,14 @@ namespace BamdadPaymentCore.Domain.IServices
             where TRequest : ITokenCommand
             where TResult : class, ITokenVm, new();
 
-        public Task<VerifyVm> VerifyTransaction(VerifyCommand verifyCommand, SelectPaymentDetailResult paymentDetail);
+        public Task<VerifyVm> VerifyTransaction(AsanRestRequest requst);
 
-        public Task<SettleVm> SettleTransaction(SettleCommand settleCommand, SelectPaymentDetailResult paymentDetail);
+        public Task<SettleVm> SettleTransaction(AsanRestRequest requst);
 
-        public Task<ReverseVm> ReverseTransaction(ReverseCommand reverseCommand, string usr, string pwd);
+        public Task<ReverseVm> ReverseTransaction(AsanRestRequest requst);
 
-        public Task<PaymentResultVm> TransactionResult(int merchantConfigId, long localInvoiceId, SelectPaymentDetailResult paymentDetail);
+        public Task<PaymentResultVm> TransactionResult(TransactionResultRequest request);
 
-        public Task<CancelResultVm> CancelTransaction(CancelCommand command, string usr, string pwd);
+        public Task<CancelResultVm> CancelTransaction(AsanRestRequest requst);
     }
 }
