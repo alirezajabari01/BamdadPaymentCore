@@ -18,5 +18,7 @@
         public string? OnlineType { get; set; }
         public int RefundStatus { get; set; }
         public string? CardHolderInfo { get; set; }
+        public string? ReferenceNumber { get; set; }
+        public bool? AutoSettle { get; set; }
     }
 }

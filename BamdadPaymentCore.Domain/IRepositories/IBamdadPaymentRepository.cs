@@ -25,9 +25,9 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         List<SelectOnlinePayDetailResult> SelectOnlinePayDetail(SelectOnlinePayDetailParameter parameter);
 
-        UpdateOnlinePayReversalResult UpdateOnlinePayReversal(UpdateOnlinePayReversalParameter parameter);
+        void UpdateOnlinePayReversal(UpdateOnlinePayReversalParameter parameter);
 
-        UpdateOnlinePayRefundResult UpdateOnlinePayRefund(UpdateOnlinePayRefundParameter parameter);
+        void UpdateOnlinePayRefund(UpdateOnlinePayRefundParameter parameter);
 
         void UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter);
 
@@ -42,5 +42,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
         void insertSiteError(InsertSiteErrorParameter parameter);
 
         UpdateOnlinePayWithSettleResult UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
+
+        int InsertTransactionResult(InsertTransactionResultParameter parameter);
     }
 }

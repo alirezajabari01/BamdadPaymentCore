@@ -263,23 +263,6 @@ namespace RestService
             }
         }
 
-
-        #region PrivateMethods
-        private HttpClient CreateClient(SelectPaymentDetailResult paymentDetail)
-        {
-            var client = new HttpClient
-            {
-                BaseAddress = new Uri(REST_URL),
-                Timeout = TimeSpan.FromSeconds(20)
-            };
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("usr", paymentDetail.Bank_User);
-            client.DefaultRequestHeaders.Add("pwd", paymentDetail.Bank_Pass);
-
-            return client;
-        }
-
         public async Task<CancelResultVm> CancelTransaction(CancelCommand command, string usr, string pwd)
         {
             var client = new HttpClient
@@ -295,12 +278,12 @@ namespace RestService
             var content = new StringContent(JsonConvert.SerializeObject(command), Encoding.UTF8, "application/json");
             try
             {
-                var responseMessage = await client.PostAsync($"v1/Cacnel", content,
+                var responseMessage = await client.PostAsync($"v1/Cancel", content,
                                        new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token);
                 switch ((int)responseMessage.StatusCode)
                 {
-                    case 800:
-                        return new CancelResultVm() { ResCode = 800, ResMessage = "transaction review cancellation request succeeded" };
+                    case 200:
+                        return new CancelResultVm() { ResCode = 200, ResMessage = "transaction review cancellation request succeeded" };
                     case 801:
                         return new CancelResultVm() { ResCode = 801, ResMessage = "processing not yet completed" };
                     case 802:
@@ -339,6 +322,23 @@ namespace RestService
                 return new CancelResultVm() { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = "Gateway Timeout" };
             }
         }
+
+        #region PrivateMethods
+        private HttpClient CreateClient(SelectPaymentDetailResult paymentDetail)
+        {
+            var client = new HttpClient
+            {
+                BaseAddress = new Uri(REST_URL),
+                Timeout = TimeSpan.FromSeconds(20)
+            };
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            client.DefaultRequestHeaders.Add("usr", paymentDetail.Bank_User);
+            client.DefaultRequestHeaders.Add("pwd", paymentDetail.Bank_Pass);
+
+            return client;
+        }
+
         #endregion
     }
 }

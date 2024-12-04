@@ -40,8 +40,5 @@ namespace BamdadPaymentCore.SOAP
 
         [OperationContract]
         public DataTable RequestSettleOnline(string username, string pass, string onlineId);
-
-        [OperationContract]
-        public 
     }
 }

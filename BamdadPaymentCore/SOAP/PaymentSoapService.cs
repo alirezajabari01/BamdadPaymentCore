@@ -12,7 +12,7 @@ namespace BamdadPaymentCore.SOAP
 {
     public class PaymentSoapService(IPaymentService paymentService) : IPaymentSoapService
     {
-       
+
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId)
         {
             string result = string.Empty;
@@ -105,15 +105,8 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-        //UseLess
 
-        public bool ReqReversal(int merchantConfigurationID, string encryptedCredentials, ulong payGateTranID)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        //On Mellat
+        //On asan
         public DataTable ReqSettleOnline(string username, string pass, string onlineId)
         {
             DataTable onlineStatus = new DataTable()
@@ -122,7 +115,7 @@ namespace BamdadPaymentCore.SOAP
             };
             try
             {
-                onlineStatus = paymentService.ReqSettleOnline(ReqSettleOnlineRequestMapper.ToReqSettleOnlineRequest(username, pass, onlineId));
+                onlineStatus = paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
             }
             catch (Exception ex)
             {
@@ -131,13 +124,13 @@ namespace BamdadPaymentCore.SOAP
             return onlineStatus;
         }
 
-        //Asan
+        //Mellat
         public bool RequestReversal(string username, string pass, string onlineId)
         {
             bool result = false;
             try
             {
-                result = paymentService.RequestReversal(username, pass, onlineId);
+                result = paymentService.ReqReversal(new ReqReversalRequest(username, pass, onlineId));
             }
             catch (Exception ex)
             {
@@ -146,7 +139,7 @@ namespace BamdadPaymentCore.SOAP
             return false;
         }
 
-        //On Asan
+        //On mellat
         public DataTable RequestSettleOnline(string username, string pass, string onlineId)
         {
             DataTable dataTable = new DataTable()
@@ -155,7 +148,8 @@ namespace BamdadPaymentCore.SOAP
             };
             try
             {
-                dataTable = paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
+                dataTable = paymentService.ReqSettleOnline(ReqSettleOnlineRequestMapper.ToReqSettleOnlineRequest(username, pass, onlineId));
+                //paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
             }
             catch (Exception ex)
             {
@@ -168,15 +162,14 @@ namespace BamdadPaymentCore.SOAP
         public bool ReqVerify(string username, string pass, string onlineId)
         => paymentService.ReqVerify(new VerifyRequest(username, pass, onlineId));
 
-        //TODO Not Yet Completed
         public bool Cancel(string username, string pass, string onlineId)
         {
             bool result = false;
             try
             {
-               // result = paymentService.CancelPayment(onlineId);
+                result = paymentService.ReqRefund(new ReqRefundRequest(username, pass, onlineId,"654"));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
             }

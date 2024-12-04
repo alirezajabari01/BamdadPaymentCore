@@ -19,6 +19,8 @@ namespace BamdadPaymentCore.Domain.Database
         }
         public DbSet<Site> Site { get; set; }
 
+        public DbSet<OnlinePay> OnlinePay { get; set; }
+
         public DbQuery<SiteAuthenticationResult> SiteAuthenticationResult { get; set; }
 
         public DbQuery<InsertOnlinePayResult> InsertOnlinePayResult { get; set; }

@@ -1,5 +1,9 @@
 ﻿namespace RestService.models.reverse
 {
-    public record CancelCommand(int MerchantConfigurationId, ulong payGateTranId);
-   
+    public class CancelCommand
+    {
+        public int merchantConfigurationId { get; set; }
+        public ulong payGateTranId { get; set; }
+    }
+
 }

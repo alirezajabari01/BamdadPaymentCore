@@ -93,7 +93,7 @@ namespace BamdadPaymentCore.Domain.Repositories
                                    .ToList().FirstOrDefault();
         }
 
-        public UpdateOnlinePayRefundResult UpdateOnlinePayRefund(UpdateOnlinePayRefundParameter parameter)
+        public void UpdateOnlinePayRefund(UpdateOnlinePayRefundParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
@@ -101,12 +101,12 @@ namespace BamdadPaymentCore.Domain.Repositories
             var online_ErrorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ErrorCode };
 
-            return context.Database.SqlQuery<UpdateOnlinePayRefundResult>
+             context.Database.SqlQuery<int>
                 ($"EXEC {StoreProcedureName.UpdateOnlinePayRefund}  {siteIdParam},{online_ErrorCodeParam}")
                                    .ToList().FirstOrDefault();
         }
 
-        public UpdateOnlinePayReversalResult UpdateOnlinePayReversal(UpdateOnlinePayReversalParameter parameter)
+        public void UpdateOnlinePayReversal(UpdateOnlinePayReversalParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
@@ -114,7 +114,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var online_ErrorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ErrorCode };
 
-            return context.Database.SqlQuery<UpdateOnlinePayReversalResult>
+             context.Database.SqlQuery<int>
                 ($"EXEC {StoreProcedureName.UpdateOnlinePayReversal}  {siteIdParam},{online_ErrorCodeParam}")
                                    .ToList().FirstOrDefault();
         }
@@ -140,7 +140,7 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Value = parameter.Online_ID
             };
 
-            context.Database.SqlQuery<UpdateOnlinePayResWithSettleResult>($"EXEC {StoreProcedureName.UpdateOnlinePayResWithSettle}  {onlineId}")
+            context.Database.SqlQuery<int>($"EXEC {StoreProcedureName.UpdateOnlinePayResWithSettle}  {onlineId}")
                 .ToList()
                 .FirstOrDefault();
         }
@@ -237,13 +237,13 @@ namespace BamdadPaymentCore.Domain.Repositories
 
         public void insertSiteError(InsertSiteErrorParameter parameter)
         {
-            var siteIdParam = new SqlParameter("@ErrorMessage", SqlDbType.Int)
+            var siteIdParam = new SqlParameter("@ErrorMessage", SqlDbType.NVarChar)
             { Direction = ParameterDirection.Input, Value = parameter.ErrorMessage };
 
-            var errorCodeParam = new SqlParameter("@ErrorSource", SqlDbType.Int)
+            var errorCodeParam = new SqlParameter("@ErrorSource", SqlDbType.NVarChar)
             { Direction = ParameterDirection.Input, Value = parameter.ErrorSource };
 
-            context.Database.SqlQuery<object>($"EXEC {StoreProcedureName.insertSiteError}  {siteIdParam},{errorCodeParam}")
+            context.Database.SqlQuery<int>($"EXEC {StoreProcedureName.insertSiteError}  {siteIdParam},{errorCodeParam}")
                 .ToList()
                 .FirstOrDefault();
         }
@@ -365,6 +365,48 @@ namespace BamdadPaymentCore.Domain.Repositories
             };
 
             return context.Database.SqlQuery<UpdateOnlinePayFailedResult>($"EXEC {StoreProcedureName.UpdateOnlinePaymentFailed}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault();
+        }
+
+        public int InsertTransactionResult(InsertTransactionResultParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ID
+            };
+
+            var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_TransactionNo
+            };
+
+            var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_OrderNo
+            };
+
+            var errorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ErrorCode
+            };
+
+            var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.CardHolderInfo
+            };
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber,
+                IsNullable = true
+            };
+
+            return context.Database.SqlQuery<int>($"EXEC {StoreProcedureName.InsertTransactionResult}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{cardHolderInfoParam},{referenceNumberParam}").ToList().FirstOrDefault();
         }
     }
 }

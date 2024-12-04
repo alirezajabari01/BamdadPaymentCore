@@ -22,11 +22,12 @@ namespace BamdadPaymentCore.Controllers
             //ViewBag.ResCode = Request.Form["ResCode"];
 
             var res = returnFromBankService.ReturnUrlRedirectionFromBank(Request);
-            if (res != string.Empty)
-            {
-                ViewBag.PaymentStatusMessage = "تراكنش با موفقيت انجام شد";
-            }
-            return Redirect(res);
+            //if (res != string.Empty)
+            //{
+            //    ViewBag.PaymentStatusMessage = "تراكنش با موفقيت انجام شد";
+            //}
+            //return Redirect(res);
+            return View();  
         }
     }
 }
