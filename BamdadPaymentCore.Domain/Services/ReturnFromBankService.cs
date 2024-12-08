@@ -16,29 +16,40 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class ReturnFromBankService(IHttpContextAccessor httpContextAccessor, IPaymentService paymentService, IPaymentGateway mellatGatewayService, IOptions<PaymentGatewaySetting> paymentSetting, IAsanResetService _ipgService, IBamdadPaymentRepository paymentRepository) : IReturnFromBankService
+    public class ReturnFromBankService(
+        IHttpContextAccessor httpContextAccessor,
+        IPaymentService paymentService,
+        IPaymentGateway mellatGatewayService,
+        IOptions<PaymentGatewaySetting> paymentSetting,
+        IAsanResetService _ipgService,
+        IBamdadPaymentRepository paymentRepository) : IReturnFromBankService
     {
-
         public string ReturnUrlRedirectionFromBank(HttpRequest Request)
         {
-            //TODO 
-            if (Request.Method == "GET") return "Fail";
+            //TODO Right Error Response 
 
-            if (!string.IsNullOrEmpty(Request.Form["SaleOrderId"])) return ReturnedFromMellat(httpContextAccessor.HttpContext.Request);
+            if (Request.Method != "POST") return "Wrong Request";
 
-            if (string.IsNullOrEmpty(Request.Query["invoiceid"])) return string.Empty;
+            string bankCode = GetBankCodeFromUrl(Request);
 
-            if (!string.IsNullOrEmpty(Request.Form["PaygateTranId"])) return ReturnFromAsanPardalht(Request);
+            if (string.IsNullOrEmpty(bankCode)) return "No Bank Found";
+
+            if (bankCode == nameof(BankCode.Mellat)) return ReturnedFromMellat(Request);
+
+            if (bankCode == nameof(BankCode.Parsian)) return string.Empty;
+
+            if (bankCode == nameof(BankCode.Asan)) return ReturnFromAsanPardalht(Request);
 
             return paymentService.CancelPayment(Request.Query["invoiceid"]);
         }
 
         public string ReturnFromAsanPardalht(HttpRequest Request)
-        => paymentService.Settle(Request.Query["invoiceid"]);
+            => paymentService.Settle(Request.Query["invoiceid"]);
 
         public string ReturnedFromMellat(HttpRequest Request)
         {
@@ -53,9 +64,12 @@ namespace BamdadPaymentCore.Domain.Services
             string verifyResult = "0";
             string inquieryResult = "0";
 
-            if (resCode != "0") if (string.IsNullOrEmpty(resCode)) return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, resCode, cardHolderInfo);
+            if (resCode != "0")
+                if (string.IsNullOrEmpty(resCode))
+                    return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, resCode, cardHolderInfo);
 
-            SelectBankDetailResult BankDetail = paymentRepository.SelectBankDetail(new SelectBankDetailParameter(saleOrderId)).SingleOrDefault();
+            SelectBankDetailResult BankDetail = paymentRepository
+                .SelectBankDetail(new SelectBankDetailParameter(saleOrderId)).SingleOrDefault();
 
             var mellatRequest = new
             {
@@ -68,32 +82,46 @@ namespace BamdadPaymentCore.Domain.Services
             };
 
             verifyResult = mellatGatewayService.bpVerifyRequest(new bpVerifyRequest(new bpVerifyRequestBody(
-                  mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
-                  mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
+                mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
+                mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
             if (verifyResult != "0")
                 inquieryResult = mellatGatewayService.bpInquiryRequest(new bpInquiryRequest(new bpInquiryRequestBody(
-                     mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.SaleOrderID,
-                     mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
+                    mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.SaleOrderID,
+                    mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
-            if (inquieryResult != "0") return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, verifyResult, cardHolderInfo);
+            if (inquieryResult != "0")
+                return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, verifyResult,
+                    cardHolderInfo);
 
             settleResult = mellatGatewayService.bpSettleRequest(new bpSettleRequest(new bpSettleRequestBody(
-                 mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
-                 mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
+                mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
+                mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
             if (settleResult == "0" || settleResult == "45")
-                return paymentRepository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(settleResult), cardHolderInfo)).Site_ReturnUrl;
+                return paymentRepository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber,
+                    Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(settleResult),
+                    cardHolderInfo)).Site_ReturnUrl;
 
             return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
         }
 
 
-
         #region PrivateMethods
 
-        string FailedPayment(string referenceNumber, string saleOrderId, string refId, string saleReferenceId, string resCode, string cardHolderInfo)
-            => paymentRepository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(resCode), cardHolderInfo)).Site_ReturnUrl;
+        string GetBankCodeFromUrl(HttpRequest Request)
+            => string.IsNullOrEmpty(Request.Form["SaleOrderId"])
+                ? paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(Request.Query["invoiceid"]))
+                    .BankCode
+                : paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(Request.Form["SaleOrderId"]))
+                    .BankCode;
+
+
+        string FailedPayment(string referenceNumber, string saleOrderId, string refId, string saleReferenceId,
+            string resCode, string cardHolderInfo)
+            => paymentRepository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,
+                    Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(resCode), cardHolderInfo))
+                .Site_ReturnUrl;
 
         #endregion
     }

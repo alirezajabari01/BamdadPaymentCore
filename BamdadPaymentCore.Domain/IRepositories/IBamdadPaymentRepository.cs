@@ -31,7 +31,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         void UpdateOnlinePayResWithSettle(UpdateOnlinePayResWithSettleParameter parameter);
 
-        UpdateOnlinePaySettleFailedResult UpdateOnlinePaySettleFailed(UpdateOnlinePayResWithSettleFailedParameter parameter);
+        void UpdateOnlinePaySettleFailed(UpdateOnlinePayResWithSettleFailedParameter parameter);
 
         SelectPaymentDetailResult SelectPaymentDetail(SelectPaymentDetailParameter parameter);
 

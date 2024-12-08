@@ -7,7 +7,18 @@ namespace BamdadPaymentCore.Controllers
     public class ReturnFromBank(IReturnFromBankService returnFromBankService) : Controller
     {
         //TODO if url nabood , show error 
-        public IActionResult Index() => Redirect(returnFromBankService.ReturnUrlRedirectionFromBank(Request) +
-                                                 "?OnlineID=" + Request.Query["invoiceid"]);
+        public IActionResult Index()
+        {
+            var result = returnFromBankService.ReturnUrlRedirectionFromBank(Request) +
+                         "?OnlineID=" + Request.Query["invoiceid"];
+            
+            if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) &&
+                (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            {
+                return Redirect(result);
+            }
+
+            return View();
+        }
     }
 }
