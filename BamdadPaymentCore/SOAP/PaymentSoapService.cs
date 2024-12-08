@@ -12,21 +12,21 @@ using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Threading.Tasks;
 using SoapCore;
-using System.ServiceModel; 
+using System.ServiceModel;
 
 
 namespace BamdadPaymentCore.SOAP
 {
-    
+
     public class PaymentSoapService(IPaymentService paymentService) : IPaymentSoapService
     {
-        
+
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId)
         {
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineId(GetOnlineIdRequestMapper.ToGetOnlineIdRequest(username, pass, price, desc, reqId));
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, "0");
             }
             catch (Exception ex)
             {
@@ -38,7 +38,7 @@ namespace BamdadPaymentCore.SOAP
 
         public string normal(string username, string pass, string price, string desc, string reqId)
         {
-          return GetOnlineId( username,  pass,  price,  desc,  reqId);
+            return GetOnlineId(username, pass, price, desc, reqId);
 
 
         }
@@ -48,7 +48,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdkind(GetOnlineIdkindRequestMapper.ToGetOnlineIdkindRequest(username, pass, price, desc, reqId, kind));
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind);
             }
             catch (Exception ex)
             {
@@ -63,7 +63,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdWithSettle(GetOnlineIdWithSettleRequestMapper.ToGetOnlineIdWithSettleRequest(username, pass, price, desc, reqId, kind));
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, true);
             }
             catch (Exception ex)
             {
@@ -181,7 +181,7 @@ namespace BamdadPaymentCore.SOAP
             bool result = false;
             try
             {
-                result = paymentService.ReqRefund(new ReqRefundRequest(username, pass, onlineId,"654"));
+                result = paymentService.ReqRefund(new ReqRefundRequest(username, pass, onlineId, "654"));
             }
             catch (Exception ex)
             {

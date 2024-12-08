@@ -12,6 +12,8 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IPaymentService
     {
+        string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice, string desc, string reqId, string kind, bool autoSettle = false, string onlineType = "payment");
+
         bool RequestReversal(string username, string pass, string onlineId);
 
         string ProcessAsanPardakhtPayment(string onlineId);
@@ -40,7 +42,7 @@ namespace BamdadPaymentCore.Domain.IServices
         DataTable ReqSettleOnline(ReqSettleOnlineRequest request);
 
         void InsertSiteError(InsertSiteErrorParameter request);
-        
+
         string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo, string orderNo, string errorCode, string cardHolderInfo);
     }
 }

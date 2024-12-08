@@ -328,7 +328,7 @@ namespace BamdadPaymentCore.Domain.Services
             => repository.SelectSiteAuthentication(new SiteAuthenticationParameter(username, Helper.HashMd5(password),
                 GetSiteIp()));
 
-        private string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice,
+        public string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice,
             string desc, string reqId, string kind, bool autoSettle = false, string onlineType = "payment")
         {
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(userName, password);
