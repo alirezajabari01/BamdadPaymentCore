@@ -1,4 +1,5 @@
 ﻿using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
@@ -16,26 +17,26 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanResetService asanRestService
-        , IPaymentGateway mellatPaymentGateway,IBamdadPaymentRepository paymentRepository) : ISendToBankService
+    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IBankService asanRestService
+        , IPaymentGateway mellatPaymentGateway, IBamdadPaymentRepository paymentRepository) : ISendToBankService
     {
 
         public string SendToBank(string onlineId)
         {
             SelectPaymentDetailResult paymentDetail = null;
 
-            if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId)); ;
+            if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
             if (paymentDetail is null || paymentDetail.Online_Status == true) return SiteErrorResponse.PaymentNotValid;
 
             //Return Redirection URL To Already Saved Sites
             if (paymentDetail.Online_Price == 0) return paymentService.FreePayment(onlineId);
 
-            if (paymentDetail.BankCode.ToString().ToLower() == "mellat") return SendToMellatPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Mellat)) return SendToMellatPaymentGateway(paymentDetail, onlineId);
 
-            if (paymentDetail.BankCode.ToString().ToLower() == "parsian") return SendToPasianPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Parsian)) return SendToPasianPaymentGateway(paymentDetail, onlineId);
 
-            if (paymentDetail.BankCode.ToString().ToLower() == "asan") return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Asan)) return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
 
             return SiteErrorResponse.NullOrEmptyOnlineId;
         }

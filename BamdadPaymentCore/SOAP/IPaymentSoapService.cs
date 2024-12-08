@@ -19,6 +19,7 @@ namespace BamdadPaymentCore.SOAP
 
         [OperationContract]
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId);
+
         [OperationContract]
         public string normal(string username, string pass, string price, string desc, string reqId);
 
@@ -35,12 +36,6 @@ namespace BamdadPaymentCore.SOAP
         public bool ReqRefund(string username, string pass, string onlineId, string refundAmount);
 
         [OperationContract]
-        public bool RequestReversal(string username, string pass, string onlineId);
-
-        [OperationContract]
         public bool ReqVerify(string username, string pass, string onlineId);
-
-        [OperationContract]
-        public DataTable RequestSettleOnline(string username, string pass, string onlineId);
     }
 }

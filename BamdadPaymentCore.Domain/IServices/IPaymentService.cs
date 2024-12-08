@@ -14,7 +14,7 @@ namespace BamdadPaymentCore.Domain.IServices
     {
         bool RequestReversal(string username, string pass, string onlineId);
 
-        string Settle(string onlineId);
+        string ProcessAsanPardakhtPayment(string onlineId);
 
         DataTable RequestSettleOnline(SettleOnlineRequest request);
 

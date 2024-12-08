@@ -35,6 +35,7 @@ namespace BamdadPaymentCore.SOAP
 
             return result;
         }
+
         public string normal(string username, string pass, string price, string desc, string reqId)
         {
           return GetOnlineId( username,  pass,  price,  desc,  reqId);
@@ -163,7 +164,6 @@ namespace BamdadPaymentCore.SOAP
             try
             {
                 dataTable = paymentService.ReqSettleOnline(ReqSettleOnlineRequestMapper.ToReqSettleOnlineRequest(username, pass, onlineId));
-                //paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
             }
             catch (Exception ex)
             {

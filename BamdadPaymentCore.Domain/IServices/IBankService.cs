@@ -1,11 +1,5 @@
 ﻿using RestService.models;
 using RestService;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using RestService.models.verify;
 using RestService.models.settle;
 using RestService.models.reverse;
@@ -14,7 +8,7 @@ using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 
 namespace BamdadPaymentCore.Domain.IServices
 {
-    public interface IAsanResetService
+    public interface IBankService
     {
         public Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
             where TRequest : ITokenCommand

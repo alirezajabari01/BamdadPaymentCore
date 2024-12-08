@@ -21,7 +21,7 @@ using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 
 namespace RestService
 {
-    public class AsanResetService : IAsanResetService
+    public class AsanResetService : IBankService
     {
         #region PrivateFields
         private const string REST_URL = "https://ipgrest.asanpardakht.ir/";
@@ -79,7 +79,7 @@ namespace RestService
             }
         }
 
-        async Task<TResult> IAsanResetService.GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
+        async Task<TResult> IBankService.GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
         {
             var refid = string.Empty;
 

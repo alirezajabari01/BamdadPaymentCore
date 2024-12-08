@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 using Nobisoft.Core.Extensions;
+using RestService;
+using RestService.models.bill;
 using RestService.models.reverse;
 using RestService.models.settle;
 using RestService.models.verify;
@@ -33,9 +35,10 @@ namespace BamdadPaymentCore.Domain.Services
         IBamdadPaymentRepository repository,
         IHttpContextAccessor httpContextAccessor,
         IPaymentGateway mellatGateway,
-        IAsanResetService asanRestService,
         IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IPaymentService
     {
+        IBankService asanRestService = new AsanResetService();
+
         #region PrivateFields
 
         private const string AuthenticationFailResponse = "-2,Authenticationfailed";
@@ -78,7 +81,23 @@ namespace BamdadPaymentCore.Domain.Services
             if (authResult is not null && string.IsNullOrEmpty(authResult.Site_ReturnUrl))
                 return Authenticationfailed();
 
-            SettleRequest(request.OnlineId);
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(request.OnlineId));
+
+            if (paymentDetail is null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0)
+                throw new AppException(ExceptionResponse.PaymentDetailNotValid, ExceptionResponse.PaymentDetailNotValidStatusCode); // Check Again
+
+            var tranResult = GetTransationResultFromAsanPardakht(request.OnlineId, paymentDetail);
+
+            if (tranResult.resCode != 0) return Authenticationfailed();
+
+            var settleResult = SettleAsan(tranResult, paymentDetail, request.OnlineId);
+
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
+              ConvertToInt(request.OnlineId), tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
+
+            if (updateResult.Success == 0)
+                throw new AppException(ExceptionResponse.UpdatePaymentFailed, ExceptionResponse.UpdatePaymentFailedStatusCode); // Check Again
+
             return repository.SelectOnlinePay(new SelectOnlinePayParameter(request.OnlineId)).ListToDataTable();
         }
 
@@ -155,12 +174,12 @@ namespace BamdadPaymentCore.Domain.Services
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(request.Username, request.Password);
             if (siteAuthenticationResult is null) return Authenticationfailed();
 
-            Settle(request.OnlineId);
+            ProcessAsanPardakhtPayment(request.OnlineId);
 
             return GetOnlineStatus(new GetOnlineStatusParameter(request.Username, request.Password, request.OnlineId));
         }
 
-        public string Settle(string onlineId)
+        public string ProcessAsanPardakhtPayment(string onlineId)
         {
             string localInvoiceId = onlineId;
 
@@ -168,38 +187,21 @@ namespace BamdadPaymentCore.Domain.Services
 
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
 
-            if (paymentDetail == null || paymentDetail.Online_Status is true) return SiteErrorResponse.PaymentNotValid;
+            if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
 
             //Free Payment
             if (paymentDetail.Online_Price == 0) return FreePayment(localInvoiceId);
 
-            var tranReq = new TransactionResultRequest
-            (
-                paymentGatewaySetting.Value.AsanMerchantId,
-                localInvoiceId,
-                paymentDetail.Bank_User,
-                paymentDetail.Bank_Pass
-            );
+            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 
-            var tranResult = asanRestService.TransactionResult(tranReq).Result;
-
-            string saleOrderId = localInvoiceId;
-            string refId = tranResult.RefId;
-            string saleReferenceId = tranResult.PayGateTranID.ToString();
-            string cardHolderInfo = tranResult.CardNumber;
-            string referenceNumber = tranResult.Rrn;
-
-            repository.InsertTransactionResult(new InsertTransactionResultParameter(referenceNumber,
-                ConvertToInt(saleOrderId), refId, saleReferenceId, tranResult.ResCode, cardHolderInfo));
-
-            if (tranResult.ResCode != 0)
-                return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId,
-                    tranResult.ResCode.ToString(), cardHolderInfo);
+            if (tranResult.resCode != 0)
+                return UpdateOnlinePayFailed(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId,
+                    tranResult.resCode.ToString(), tranResult.cardHolderInfo);
 
             var verifyCommand = new AsanRestRequest
             {
                 merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID),
+                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
                 BankUser = paymentDetail.Bank_User,
                 BankPassword = paymentDetail.Bank_Pass,
             };
@@ -207,40 +209,20 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (verifyRes.ResCode != 0)
             {
-                repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.Rrn,
-                    ConvertToInt(onlineId), tranResult.RefId, tranResult.PayGateTranID.ToString(), verifyRes.ResCode,
-                    tranResult.CardNumber));
-                throw new AppException(verifyRes.ResMessage, verifyRes.ResCode);
+                return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
+                     ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
+                     tranResult.cardHolderInfo)).Site_ReturnUrl;
             }
 
-            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber,
-                ConvertToInt(saleOrderId), refId, saleReferenceId, verifyRes.ResCode, cardHolderInfo)).Site_ReturnUrl;
+            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
+                ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
 
             if (paymentDetail.AutoSettle is false) return url;
 
-            var settleCommand = new AsanRestRequest
-            {
-                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
-                payGateTranId = Convert.ToUInt64(tranResult.PayGateTranID),
-                BankUser = paymentDetail.Bank_User,
-                BankPassword = paymentDetail.Bank_Pass,
-            };
+            var settleRes = SettleAsan(tranResult, paymentDetail, onlineId);
 
-            SettleVm settleRes = asanRestService.SettleTransaction(settleCommand).Result;
-
-            //TODO Settle Failed 
-            if (settleRes.ResCode != 0)
-            {
-                repository.UpdateOnlinePaySettleFailed(
-                    new UpdateOnlinePayResWithSettleFailedParameter(onlineId, settleRes.ResCode));
-                throw new AppException(settleRes.ResMessage, settleRes.ResCode);
-            }
-
-            repository.UpdateOnlinePayResWithSettle(
-                new UpdateOnlinePayResWithSettleParameter(ConvertToInt(localInvoiceId)));
-
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber,
-                ConvertToInt(saleOrderId), refId, saleReferenceId, settleRes.ResCode, cardHolderInfo));
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
+              ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
 
             if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
 
@@ -261,11 +243,9 @@ namespace BamdadPaymentCore.Domain.Services
 
             var transactionResult = asanRestService.TransactionResult(tranReq).Result;
 
-            //TODO Shoud Verify Again
-
             if (transactionResult.ResCode != 0) throw new Exception(transactionResult.ResMessage);
 
-            var settleCommand = new AsanRestRequest()
+            var reverseCommand = new AsanRestRequest()
             {
                 merchantConfigurationId = ConvertToInt(paymentDetail.Bank_MerchantID),
                 payGateTranId = Convert.ToUInt64(transactionResult.PayGateTranID),
@@ -273,7 +253,7 @@ namespace BamdadPaymentCore.Domain.Services
                 BankPassword = paymentDetail.Bank_Pass,
             };
 
-            var reverseResult = asanRestService.ReverseTransaction(settleCommand).Result;
+            var reverseResult = asanRestService.ReverseTransaction(reverseCommand).Result;
 
             if (reverseResult.ResCode != 0) throw new Exception("reversal Failed");
 
@@ -283,7 +263,59 @@ namespace BamdadPaymentCore.Domain.Services
             return true;
         }
 
+
+
         #region PrivateMethods
+
+
+        private record AsanTransactionResult(string refId, string saleReferenceId, string cardHolderInfo, string referenceNumber, string resMessage, int resCode);
+
+        private AsanTransactionResult GetTransationResultFromAsanPardakht(string onlineId, SelectPaymentDetailResult paymentDetail)
+        {
+            var tranReq = new TransactionResultRequest
+            (
+                paymentGatewaySetting.Value.AsanMerchantId,
+                onlineId,
+                paymentDetail.Bank_User,
+                paymentDetail.Bank_Pass
+            );
+
+            var tranResult = asanRestService.TransactionResult(tranReq).Result;
+
+            string saleOrderId = onlineId;
+            string refId = tranResult.RefId;
+            string saleReferenceId = tranResult.PayGateTranID.ToString();
+            string cardHolderInfo = tranResult.CardNumber;
+            string referenceNumber = tranResult.Rrn;
+
+            repository.InsertTransactionResult
+                (new InsertTransactionResultParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, tranResult.ResCode, cardHolderInfo));
+
+            return new(refId, saleReferenceId, cardHolderInfo, referenceNumber, tranResult.ResMessage, tranResult.ResCode);
+        }
+
+        private SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId)
+        {
+            var settleCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
+                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+
+            var settleRes = asanRestService.SettleTransaction(settleCommand).Result;
+
+            if (settleRes.ResCode != 0)
+            {
+                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(onlineId, settleRes.ResCode));
+            }
+
+            repository.UpdateOnlinePayResWithSettle(
+              new UpdateOnlinePayResWithSettleParameter(ConvertToInt(onlineId)));
+
+            return settleRes;
+        }
 
         private DataTable GetOnlineStatus(string onlineId)
             => repository.SelectOnlinePay(new SelectOnlinePayParameter(onlineId)).ListToDataTable();
@@ -305,12 +337,10 @@ namespace BamdadPaymentCore.Domain.Services
             var bankId = repository
                 .SelectBankID(new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID))).Bank_ID;
 
-            return !string.IsNullOrEmpty(onlinePrice)
-                ? repository.InsertOnlinePay(new InsertIntoOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID,
-                        ConvertToInt(onlinePrice), desc, ConvertToInt(reqId), ConvertToInt(kind), autoSettle,
-                        onlineType))
-                    .OnlineID.ToString()
-                : FillParameterFailResponse;
+            return string.IsNullOrEmpty(onlinePrice)
+                ? FillParameterFailResponse
+                : repository.InsertOnlinePay(new InsertIntoOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID,
+                        ConvertToInt(onlinePrice), desc, ConvertToInt(reqId), ConvertToInt(kind), autoSettle, onlineType)).OnlineID.ToString();
         }
 
         public DataTable Authenticationfailed()
@@ -397,26 +427,16 @@ namespace BamdadPaymentCore.Domain.Services
         public bool Cancel(string onlineId)
         {
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
-            if (paymentDetail == null || paymentDetail.Online_Status == false) return false;
+            if (paymentDetail == null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0) throw new Exception();
 
-            var tranReq = new TransactionResultRequest
-            (
-                paymentGatewaySetting.Value.AsanMerchantId,
-                onlineId,
-                paymentDetail.Bank_User,
-                paymentDetail.Bank_Pass
-            );
+            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 
-            var tranResult = asanRestService.TransactionResult(tranReq).Result;
-
-            if (tranResult.ResCode != 0) throw new Exception(tranResult.ResMessage);
-
-            //TODO If Not Verified then Cannot be Cancelled , so Should I Verify Here ?
+            if (tranResult.resCode != 0) throw new Exception(tranResult.resMessage);
 
             var CancelCommand = new AsanRestRequest()
             {
                 merchantConfigurationId = ConvertToInt(paymentDetail.Bank_MerchantID),
-                payGateTranId = (ulong)tranResult.PayGateTranID,
+                payGateTranId = ulong.Parse(tranResult.saleReferenceId),
                 BankUser = paymentDetail.Bank_User,
                 BankPassword = paymentDetail.Bank_Pass,
             };
@@ -425,8 +445,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (cancelResult.ResCode != 200) throw new Exception(cancelResult.ResMessage);
 
-            repository.UpdateOnlinePayRefund(
-                new UpdateOnlinePayRefundParameter(ConvertToInt(onlineId), cancelResult.ResCode));
+            repository.UpdateOnlinePayRefund(new UpdateOnlinePayRefundParameter(ConvertToInt(onlineId), cancelResult.ResCode));
 
             return true;
         }
@@ -495,6 +514,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             return result;
         }
+
 
         #endregion
     }

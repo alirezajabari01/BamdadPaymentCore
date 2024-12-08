@@ -26,9 +26,9 @@ namespace BamdadPaymentCore.Domain.Services
         IPaymentService paymentService,
         IPaymentGateway mellatGatewayService,
         IOptions<PaymentGatewaySetting> paymentSetting,
-        IAsanResetService _ipgService,
         IBamdadPaymentRepository paymentRepository) : IReturnFromBankService
     {
+
         public string ReturnUrlRedirectionFromBank(HttpRequest Request)
         {
             //TODO Right Error Response 
@@ -49,7 +49,7 @@ namespace BamdadPaymentCore.Domain.Services
         }
 
         public string ReturnFromAsanPardalht(HttpRequest Request)
-            => paymentService.Settle(Request.Query["invoiceid"]);
+            => paymentService.ProcessAsanPardakhtPayment(Request.Query["invoiceid"]);
 
         public string ReturnedFromMellat(HttpRequest Request)
         {

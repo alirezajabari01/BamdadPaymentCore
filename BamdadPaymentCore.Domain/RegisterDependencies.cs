@@ -36,7 +36,7 @@ namespace BamdadPaymentCore.Domain
 
             services.AddScoped<ISendToBankService, SendToBankService>();
 
-            services.AddScoped<IAsanResetService, AsanResetService>();
+            services.AddScoped<IBankService, AsanResetService>();
 
             services.AddScoped<IReturnFromBankService, ReturnFromBankService>();
 

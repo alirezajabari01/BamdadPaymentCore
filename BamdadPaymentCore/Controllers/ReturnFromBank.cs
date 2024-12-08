@@ -1,4 +1,5 @@
 ﻿using BamdadPaymentCore.Domain.Entites;
+using BamdadPaymentCore.Domain.Exceptions;
 using BamdadPaymentCore.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +10,9 @@ namespace BamdadPaymentCore.Controllers
         //TODO if url nabood , show error 
         public IActionResult Index()
         {
-            var result = returnFromBankService.ReturnUrlRedirectionFromBank(Request) +
-                         "?OnlineID=" + Request.Query["invoiceid"];
-            
+            string result = returnFromBankService.ReturnUrlRedirectionFromBank(Request) +
+                    "?OnlineID=" + Request.Query["invoiceid"];
+
             if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) &&
                 (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
