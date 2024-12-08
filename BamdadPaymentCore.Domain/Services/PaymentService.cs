@@ -194,6 +194,8 @@ namespace BamdadPaymentCore.Domain.Services
 
             var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 
+            if (tranResult.resCode == 911) return CancelPayment(onlineId);
+
             if (tranResult.resCode != 0)
                 return UpdateOnlinePayFailed(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId,
                     tranResult.resCode.ToString(), tranResult.cardHolderInfo);

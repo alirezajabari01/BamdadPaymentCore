@@ -45,11 +45,13 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (bankCode == nameof(BankCode.Asan)) return ReturnFromAsanPardalht(Request);
 
-            return paymentService.CancelPayment(Request.Query["invoiceid"]);
+            return "No Bank Found";
         }
 
         public string ReturnFromAsanPardalht(HttpRequest Request)
-            => paymentService.ProcessAsanPardakhtPayment(Request.Query["invoiceid"]);
+            => string.IsNullOrEmpty(Request.Form["PaygateTranId"])
+            ? paymentService.CancelPayment(Request.Query["invoiceid"])
+            : paymentService.ProcessAsanPardakhtPayment(Request.Query["invoiceid"]);
 
         public string ReturnedFromMellat(HttpRequest Request)
         {
