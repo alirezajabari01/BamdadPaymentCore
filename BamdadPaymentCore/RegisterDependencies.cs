@@ -19,8 +19,9 @@ namespace BamdadPaymentCore
         }
         public static void RegisterSoap(this WebApplication app)
         {
-            //app.UseSoapEndpoint<IPaymentSoapService>("/PaymentSoapService.asmx", new SoapEncoderOptions(), SoapSerializer.DataContractSerializer);
-            app.UseSoapEndpoint<IPaymentSoapService>("/PaymentSoapService.asmx", new SoapEncoderOptions());
+            var options = new SoapEncoderOptions();
+           // options.
+            app.UseSoapEndpoint<IPaymentSoapService>("/PaymentSoapService", options);
         }
     }
 }

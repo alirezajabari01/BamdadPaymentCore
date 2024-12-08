@@ -1,7 +1,10 @@
-﻿namespace BamdadPaymentCore.Domain.Entites
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BamdadPaymentCore.Domain.Entites
 {
     public class OnlinePay
     {
+        [Key]
         public int OnlineId { get; set; }
         public int BankId { get; set; }
         public int SiteId { get; set; }

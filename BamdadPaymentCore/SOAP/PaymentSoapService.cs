@@ -1,18 +1,26 @@
 ﻿using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.SoapDto.Requests;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
+using SoapCore.ServiceModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.ServiceModel.Dispatcher;
 using System.Text;
 using System.Threading.Tasks;
+using SoapCore;
+using System.ServiceModel; 
+
 
 namespace BamdadPaymentCore.SOAP
 {
+    
     public class PaymentSoapService(IPaymentService paymentService) : IPaymentSoapService
     {
-
+        
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId)
         {
             string result = string.Empty;
@@ -26,6 +34,12 @@ namespace BamdadPaymentCore.SOAP
             }
 
             return result;
+        }
+        public string normal(string username, string pass, string price, string desc, string reqId)
+        {
+          return GetOnlineId( username,  pass,  price,  desc,  reqId);
+
+
         }
 
         public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind)
@@ -176,5 +190,7 @@ namespace BamdadPaymentCore.SOAP
 
             return result;
         }
+
+
     }
 }

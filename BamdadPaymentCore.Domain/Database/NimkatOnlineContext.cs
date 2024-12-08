@@ -18,12 +18,14 @@ namespace BamdadPaymentCore.Domain.Database
             optionsBuilder.LogTo(Console.WriteLine);
         }
         public DbSet<Site> Site { get; set; }
-
         public DbSet<OnlinePay> OnlinePay { get; set; }
+        public DbSet<Bank> Banks { get; set; }
+        public DbSet<SiteError> SiteErrors { get; set; }
+        public DbSet<User> Users { get; set; }
 
         public DbQuery<SiteAuthenticationResult> SiteAuthenticationResult { get; set; }
 
-        public DbQuery<InsertOnlinePayResult> InsertOnlinePayResult { get; set; }
+        public DbQuery<InsertIntoOnlinePayResult> InsertOnlinePayResult { get; set; }
 
         public DbQuery<SelectBankIdResult> SelectBankIdResult { get; set; }
 

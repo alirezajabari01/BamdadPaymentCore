@@ -22,8 +22,10 @@ namespace BamdadPaymentCore.Domain.Services
 {
     public class ReturnFromBankService(IHttpContextAccessor httpContextAccessor, IPaymentService paymentService, IPaymentGateway mellatGatewayService, IOptions<PaymentGatewaySetting> paymentSetting, IAsanResetService _ipgService, IBamdadPaymentRepository paymentRepository) : IReturnFromBankService
     {
+
         public string ReturnUrlRedirectionFromBank(HttpRequest Request)
         {
+            //TODO 
             if (Request.Method == "GET") return "Fail";
 
             if (!string.IsNullOrEmpty(Request.Form["SaleOrderId"])) return ReturnedFromMellat(httpContextAccessor.HttpContext.Request);

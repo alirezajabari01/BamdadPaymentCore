@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.StoreProceduresModels.Response
 {
-    public class InsertOnlinePayResult : BaseEntity
+    public class InsertIntoOnlinePayResult : BaseEntity
     {
         [Key]
         public decimal OnlineID { get; set; }

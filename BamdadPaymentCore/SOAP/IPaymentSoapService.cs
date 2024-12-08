@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.SOAP
 {
-    [ServiceContract]
+    [ServiceContract(Namespace = "http://mftlearning.com/"), XmlSerializerFormat]
     public interface IPaymentSoapService
     {
         [OperationContract]
@@ -19,6 +19,8 @@ namespace BamdadPaymentCore.SOAP
 
         [OperationContract]
         public string GetOnlineId(string username, string pass, string price, string desc, string reqId);
+        [OperationContract]
+        public string normal(string username, string pass, string price, string desc, string reqId);
 
         [OperationContract]
         public DataTable GetOnlineStatus(string username, string pass, string onlineId);

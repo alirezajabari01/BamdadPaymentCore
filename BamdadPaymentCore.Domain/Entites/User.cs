@@ -1,7 +1,10 @@
-﻿namespace BamdadPaymentCore.Domain.Entites
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BamdadPaymentCore.Domain.Entites
 {
     public class User
     {
+        [Key]
         public int UserId { get; set; }
         public string? UserName { get; set; }
         public string? UserFamily { get; set; }

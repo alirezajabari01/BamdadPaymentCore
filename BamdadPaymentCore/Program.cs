@@ -22,9 +22,19 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.RegisterSoap();
-app.MapControllers();
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/")
+    {
+        context.Response.Redirect("/PaymentSoapService");
+        return;
+    }
+    await next();
+});
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+app.RegisterSoap();
+app.MapControllers();
 app.Run();

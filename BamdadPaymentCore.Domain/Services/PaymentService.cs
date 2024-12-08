@@ -50,7 +50,7 @@ namespace BamdadPaymentCore.Domain.Services
         => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId, request.Kind);
 
         public string GetOnlineIdWithSettle(GetOnlineIdWithSettleRequest request)
-        => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId, request.Kind, 1);
+        => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId, request.Kind, true);
 
         public DataTable GetOnlineStatus(GetOnlineStatusParameter request)
         => Authenticate(request.Username, request.Password) is null
@@ -173,7 +173,6 @@ namespace BamdadPaymentCore.Domain.Services
             if (tranResult.ResCode != 0)
                 return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId, tranResult.ResCode.ToString(), cardHolderInfo);
 
-
             var verifyCommand = new AsanRestRequest()
             {
                 merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
@@ -189,8 +188,10 @@ namespace BamdadPaymentCore.Domain.Services
                 throw new AppException(verifyRes.ResMessage, verifyRes.ResCode);
             }
 
-            //TODO check auto settle true ?
-            // if(paymentDetail.)
+            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, verifyRes.ResCode, cardHolderInfo)).Site_ReturnUrl;
+
+            if (paymentDetail.AutoSettle is false) return url;
+
             var settleCommand = new AsanRestRequest()
             {
                 merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
@@ -201,12 +202,17 @@ namespace BamdadPaymentCore.Domain.Services
 
             SettleVm settleRes = asanRestService.SettleTransaction(settleCommand).Result;
 
+            //TODO Settle Failed 
             if (settleRes.ResCode != 0) return UpdateOnlinePayFailed(referenceNumber, saleOrderId, refId, saleReferenceId,
                 settleRes.ResCode.ToString(), cardHolderInfo);
 
             repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(ConvertToInt(localInvoiceId)));
 
-            return repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, settleRes.ResCode, cardHolderInfo)).Site_ReturnUrl;
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, settleRes.ResCode, cardHolderInfo));
+
+            if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
+
+            return SiteErrorResponse.NullOrEmptyOnlineId;
         }
 
         public bool RequestReversal(string username, string pass, string onlineId)
@@ -257,7 +263,7 @@ namespace BamdadPaymentCore.Domain.Services
            => repository.SelectSiteAuthentication(new SiteAuthenticationParameter(username, Helper.HashMd5(password), GetSiteIp()));
 
         private string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice,
-        string desc, string reqId, string kind, int isSettle = 0, string onlineType = "payment")
+        string desc, string reqId, string kind, bool autoSettle = false, string onlineType = "payment")
         {
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(userName, password);
             if (siteAuthenticationResult is null) return AuthenticationFailResponse;
@@ -265,7 +271,7 @@ namespace BamdadPaymentCore.Domain.Services
             var bankId = repository.SelectBankID(new SelectBankIdParameter(Convert.ToInt32(siteAuthenticationResult.Site_ID))).Bank_ID;
 
             return !string.IsNullOrEmpty(onlinePrice) ?
-                repository.InsertOnlinePay(new InsertOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID, ConvertToInt(onlinePrice), desc, ConvertToInt(reqId), ConvertToInt(kind), isSettle, onlineType)).OnlineID.ToString() : FillParameterFailResponse;
+                repository.InsertOnlinePay(new InsertIntoOnlinePayParameter(bankId, siteAuthenticationResult.Site_ID, ConvertToInt(onlinePrice), desc, ConvertToInt(reqId), ConvertToInt(kind), autoSettle, onlineType)).OnlineID.ToString() : FillParameterFailResponse;
         }
 
         public DataTable Authenticationfailed()

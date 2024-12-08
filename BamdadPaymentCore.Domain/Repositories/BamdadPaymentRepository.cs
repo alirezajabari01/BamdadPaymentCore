@@ -12,7 +12,7 @@ namespace BamdadPaymentCore.Domain.Repositories
 {
     internal class BamdadPaymentRepository(NimkatOnlineContext context) : IBamdadPaymentRepository
     {
-        public InsertOnlinePayResult InsertOnlinePay(InsertOnlinePayParameter parameter)
+        public InsertIntoOnlinePayResult InsertOnlinePay(InsertIntoOnlinePayParameter parameter)
         {
             var bankIdParam = new SqlParameter("@Bank_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Bank_ID };
@@ -32,15 +32,14 @@ namespace BamdadPaymentCore.Domain.Repositories
             var kindParam = new SqlParameter("@Online_Kind", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Kind };
 
-            var settleParam = new SqlParameter("@IsSettle", SqlDbType.Int)
-            { Direction = ParameterDirection.Input, Value = parameter.IsSettle };
+            var autoSettleParam = new SqlParameter("@AutoSettle", SqlDbType.Bit)
+            { Direction = ParameterDirection.Input, Value = parameter.AutoSettle };
 
             var typeParam = new SqlParameter("@Online_Type", SqlDbType.VarChar)
-            { Direction = ParameterDirection.Input, Value = parameter.Online_Type };
+            { Direction = ParameterDirection.Input, Value = parameter.Online_Type};
 
-            return context.Database.SqlQuery<InsertOnlinePayResult>($"EXEC {StoreProcedureName.InsertOnlinePay} {bankIdParam}, {siteIdParam}, {priceParam}, {descParam}, {reqIdParam}, {kindParam}, {settleParam}, {typeParam}")
-            .ToList()
-            .FirstOrDefault();
+           return  context.Database.SqlQuery<InsertIntoOnlinePayResult>($"EXEC {StoreProcedureName.InsertOnlinePay} {bankIdParam}, {siteIdParam}, {priceParam}, {descParam}, {reqIdParam}, {kindParam}, {autoSettleParam}, {typeParam}").ToList().FirstOrDefault();
+            
         }
 
         public List<SelectBankDetailResult> SelectBankDetail(SelectBankDetailParameter parameter)
@@ -148,9 +147,10 @@ namespace BamdadPaymentCore.Domain.Repositories
         public SelectPaymentDetailResult SelectPaymentDetail(SelectPaymentDetailParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+           
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
 
-            return context.Database.SqlQuery<SelectPaymentDetailResult>($"EXEC {StoreProcedureName.SelectPaymentDetail}  {siteIdParam}").ToList().FirstOrDefault();
+            return context.Database.SqlQuery<SelectPaymentDetailResult>($"EXEC {StoreProcedureName.SelectPaymentDetail}  {siteIdParam}").AsEnumerable().FirstOrDefault();
         }
 
         public UpdateOnlinePayResult UpdateOnlinePay(UpdateOnlinePayParameter parameter)

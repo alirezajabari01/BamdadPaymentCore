@@ -10,5 +10,6 @@
         public int Online_Kind { get; set; }
         public int IsSettle { get; set; }
         public bool Online_Status { get; set; }
+        public bool AutoSettle { get; set; }
     }
 }

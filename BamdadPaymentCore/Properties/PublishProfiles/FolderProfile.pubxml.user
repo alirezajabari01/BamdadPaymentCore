@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\publish\</_PublishTargetUrl>
+    <History>True|2024-12-07T11:55:05.6707778Z||;True|2024-12-07T15:16:37.9940214+03:30||;True|2024-12-07T14:36:54.1724307+03:30||;True|2024-12-07T13:38:49.8358655+03:30||;True|2024-12-07T13:28:50.8472833+03:30||;True|2024-12-07T10:38:28.0422218+03:30||;True|2024-12-07T10:29:33.8412737+03:30||;True|2024-12-07T10:22:04.5964038+03:30||;True|2024-12-07T10:06:01.4086183+03:30||;True|2024-12-06T14:57:28.4564892+03:30||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+</Project>

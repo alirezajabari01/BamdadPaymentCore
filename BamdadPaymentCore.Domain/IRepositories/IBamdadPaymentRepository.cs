@@ -13,7 +13,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
 {
     public interface IBamdadPaymentRepository
     {
-        InsertOnlinePayResult InsertOnlinePay(InsertOnlinePayParameter parameter);
+        InsertIntoOnlinePayResult InsertOnlinePay(InsertIntoOnlinePayParameter parameter);
 
         SelectBankIdResult SelectBankID(SelectBankIdParameter parameter);
 

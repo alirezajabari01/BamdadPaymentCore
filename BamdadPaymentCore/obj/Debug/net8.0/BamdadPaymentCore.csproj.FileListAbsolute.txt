@@ -90,7 +90,6 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.Ge
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.AssemblyInfoInputs.cache
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.AssemblyInfo.cs
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.csproj.CoreCompileInputs.cache
-C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.MvcApplicationPartsAssemblyInfo.cs
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.MvcApplicationPartsAssemblyInfo.cache
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.RazorAssemblyInfo.cache
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.RazorAssemblyInfo.cs
@@ -106,7 +105,6 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\staticwebassets\msbu
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.BamdadPaymentCore.props
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.BamdadPaymentCore.props
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\staticwebassets.pack.json
-C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPa.ECAA37EA.Up2Date
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\refint\BamdadPaymentCore.dll
@@ -187,3 +185,4 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\tr\System.ServiceMod
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\zh-Hans\System.ServiceModel.Primitives.resources.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\bin\Debug\net8.0\zh-Hant\System.ServiceModel.Primitives.resources.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.sourcelink.json
+C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\BamdadPaymentCore.MvcApplicationPartsAssemblyInfo.cs

@@ -3,5 +3,6 @@
     public class UpdateOnlinePayResult
     {
         public string Site_ReturnUrl { get; set; }
+        public int Success { get; set; }
     }
 }

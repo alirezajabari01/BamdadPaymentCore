@@ -31,11 +31,11 @@ namespace BamdadPaymentCore.Domain.Services
             //Return Redirection URL To Already Saved Sites
             if (paymentDetail.Online_Price == 0) return paymentService.FreePayment(onlineId);
 
-            if (paymentDetail.Bank_MerchantID.ToString() == paymentGatewaySetting.Value.MelatMerchantId) return SendToMellatPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode.ToString().ToLower() == "mellat") return SendToMellatPaymentGateway(paymentDetail, onlineId);
 
-            if (paymentDetail.Bank_MerchantID.ToString() == paymentGatewaySetting.Value.ParsianMerchantId) return SendToPasianPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode.ToString().ToLower() == "parsian") return SendToPasianPaymentGateway(paymentDetail, onlineId);
 
-            if (paymentDetail.Bank_MerchantID.ToString() == paymentGatewaySetting.Value.AsanMerchantId) return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode.ToString().ToLower() == "asan") return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
 
             return SiteErrorResponse.NullOrEmptyOnlineId;
         }
@@ -90,7 +90,7 @@ namespace BamdadPaymentCore.Domain.Services
 
         private string PayNormalMelat(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
         {
-            return mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
+            var t = mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
                 long.Parse(paymentDetail.Bank_MerchantID.ToString())
                 , paymentDetail.Bank_User
                 , paymentDetail.Bank_Pass
@@ -107,6 +107,7 @@ namespace BamdadPaymentCore.Domain.Services
                 , ""
                 , null
                 ))).Body.@return;
+            return t;
         }
 
         private string PayWithKind(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)

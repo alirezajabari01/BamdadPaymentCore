@@ -1,7 +1,10 @@
-﻿namespace BamdadPaymentCore.Domain.Entites
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace BamdadPaymentCore.Domain.Entites
 {
     public class Site
     {
+        [Key]
         public int SiteId { get; set; }
         public string SiteName { get; set; }
         public string SiteReturnUrl { get; set; }
