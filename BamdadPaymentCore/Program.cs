@@ -35,6 +35,9 @@ app.Use(async (context, next) =>
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.RegisterSoap();
+
 app.MapControllers();
+
 app.Run();

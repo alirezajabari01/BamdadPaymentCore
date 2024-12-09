@@ -84,7 +84,7 @@ namespace BamdadPaymentCore.Domain.Services
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(request.OnlineId));
 
             if (paymentDetail is null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0)
-                throw new AppException(ExceptionResponse.PaymentDetailNotValid, ExceptionResponse.PaymentDetailNotValidStatusCode); // Check Again
+                throw new PaymentDetailException(); 
 
             var tranResult = GetTransationResultFromAsanPardakht(request.OnlineId, paymentDetail);
 
@@ -96,7 +96,7 @@ namespace BamdadPaymentCore.Domain.Services
               ConvertToInt(request.OnlineId), tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
 
             if (updateResult.Success == 0)
-                throw new AppException(ExceptionResponse.UpdatePaymentFailed, ExceptionResponse.UpdatePaymentFailedStatusCode); // Check Again
+                throw new UpdateOnlinePaymentException();
 
             return repository.SelectOnlinePay(new SelectOnlinePayParameter(request.OnlineId)).ListToDataTable();
         }
@@ -122,7 +122,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(request.OnlineId));
 
-            if (paymentDetail is null) throw new AppException("No Payment Found", HttpStatusCode.NotFound);
+            if (paymentDetail is null) throw new PaymentDetailException();
 
             var tranReq = new TransactionResultRequest
             (
@@ -142,7 +142,7 @@ namespace BamdadPaymentCore.Domain.Services
                 repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
                     ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
                     transactionResult.ResCode, transactionResult.CardNumber));
-                throw new AppException(transactionResult.ResMessage, transactionResult.ResCode);
+                throw new GetTransationResultException();
             }
 
             var verifyCommand = new AsanRestRequest
@@ -159,7 +159,7 @@ namespace BamdadPaymentCore.Domain.Services
                 repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
                     ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
                     verifyRes.ResCode, transactionResult.CardNumber));
-                throw new AppException(verifyRes.ResMessage, verifyRes.ResCode);
+                throw new VerifyTransationException();
             }
 
             repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(transactionResult.Rrn,
@@ -245,7 +245,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             var transactionResult = asanRestService.TransactionResult(tranReq).Result;
 
-            if (transactionResult.ResCode != 0) throw new Exception(transactionResult.ResMessage);
+            if (transactionResult.ResCode != 0) throw new GetTransationResultException();
 
             var reverseCommand = new AsanRestRequest()
             {
@@ -257,7 +257,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             var reverseResult = asanRestService.ReverseTransaction(reverseCommand).Result;
 
-            if (reverseResult.ResCode != 0) throw new Exception("reversal Failed");
+            if (reverseResult.ResCode != 0) throw new ReverseTransationException();
 
             repository.UpdateOnlinePayReversal(new UpdateOnlinePayReversalParameter(ConvertToInt(onlineId),
                 ConvertToInt(reverseResult.ResCode.ToString())));
@@ -429,11 +429,11 @@ namespace BamdadPaymentCore.Domain.Services
         public bool Cancel(string onlineId)
         {
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
-            if (paymentDetail == null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0) throw new Exception();
+            if (paymentDetail == null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0) throw new PaymentDetailException();
 
             var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 
-            if (tranResult.resCode != 0) throw new Exception(tranResult.resMessage);
+            if (tranResult.resCode != 0) throw new GetTransationResultException();
 
             var CancelCommand = new AsanRestRequest()
             {
@@ -445,7 +445,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             var cancelResult = asanRestService.CancelTransaction(CancelCommand).Result;
 
-            if (cancelResult.ResCode != 200) throw new Exception(cancelResult.ResMessage);
+            if (cancelResult.ResCode != 200) throw new CancelTransationException();
 
             repository.UpdateOnlinePayRefund(new UpdateOnlinePayRefundParameter(ConvertToInt(onlineId), cancelResult.ResCode));
 
