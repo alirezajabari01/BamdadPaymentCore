@@ -11,8 +11,7 @@ namespace BamdadPaymentCore.Controllers
         {
             string result = returnFromBankService.ReturnUrlRedirectionFromBank(Request) + "?OnlineID=" + Request.Query["invoiceid"];
 
-            if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) &&
-                (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+            if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
                 return Redirect(result);
             }

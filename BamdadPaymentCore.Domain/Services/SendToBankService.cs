@@ -29,7 +29,6 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (paymentDetail is null || paymentDetail.Online_Status == true) return SiteErrorResponse.PaymentNotValid;
 
-            //Return Redirection URL To Already Saved Sites
             if (paymentDetail.Online_Price == 0) return paymentService.FreePayment(onlineId);
 
             if (paymentDetail.BankCode == nameof(BankCode.Mellat)) return SendToMellatPaymentGateway(paymentDetail, onlineId);
@@ -68,15 +67,15 @@ namespace BamdadPaymentCore.Domain.Services
 
         public string SendToAsanPardakhtPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
         {
-            var paymentToken = new RequestCommand(Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-                                           Convert.ToInt32(ServiceTypeEnum.Sale),
-                                           Convert.ToInt64(onlineId),
-                                           Convert.ToUInt64(paymentDetail.Online_Price.ToString()),
-                                            $"{paymentGatewaySetting.Value.MelatReturnBank}?invoiceID={onlineId}",
-                                           "پرداخت"
-                                          );
-
-
+            var paymentToken = new RequestCommand
+            (
+             Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+             Convert.ToInt32(ServiceTypeEnum.Sale),
+             Convert.ToInt64(onlineId),
+             Convert.ToUInt64(paymentDetail.Online_Price.ToString()),
+              $"{paymentGatewaySetting.Value.MelatReturnBank}?invoiceID={onlineId}",
+             "پرداخت"
+            );
 
             var tokenResult = asanRestService.GetToken<RequestCommand, RequestTokenVm>(paymentToken, paymentDetail).Result;
 

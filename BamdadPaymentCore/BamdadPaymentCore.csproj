@@ -14,8 +14,4 @@
     <ProjectReference Include="..\BamdadPaymentCore.Domain\BamdadPaymentCore.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\SendToBank\" />
-  </ItemGroup>
-
 </Project>
