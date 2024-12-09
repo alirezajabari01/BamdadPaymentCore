@@ -201,7 +201,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.ReferenceNumber
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
             };
 
             return context.Database
@@ -245,7 +245,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.ReferenceNumber
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
             };
 
             return context.Database
@@ -339,7 +339,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.ReferenceNumber,
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
                 IsNullable = true
             };
 
@@ -429,7 +429,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.ReferenceNumber,
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
                 IsNullable = true
             };
 

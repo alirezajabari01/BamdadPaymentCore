@@ -1,4 +1,5 @@
-﻿using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+﻿using BamdadPaymentCore.Domain.ControllerDto;
+using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,9 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface ISendToBankService
     {
-        string SendToBank(string onlineId);
+        SendToBankResultVm SendToBank(string onlineId);
 
         string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail,string onlineId);
-
-        string SendToAsanPardakhtPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId);
 
         string SendToPasianPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId);
     }

@@ -89,7 +89,6 @@ namespace BamdadPaymentCore.SOAP
             return onlineStatus;
         }
 
-        // Must Be Changed To Cancel 
         public bool ReqRefund(string username, string pass, string onlineId, string refundAmount)
         {
             bool result = false;
@@ -104,13 +103,11 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-        // This One Was On Mellat But Now On Asan
         public bool ReqReversal(string username, string pass, string onlineId)
         {
             bool result = false;
             try
             {
-                //result = paymentService.ReqReversal(ReqReversalRequestMappe.ToReqReversalRequest(username, pass, onlineId));
                 result = paymentService.RequestReversal(username, pass, onlineId);
             }
             catch (Exception ex)
@@ -120,8 +117,6 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-
-        //On asan
         public DataTable ReqSettleOnline(string username, string pass, string onlineId)
         {
             DataTable onlineStatus = new DataTable()
@@ -139,13 +134,12 @@ namespace BamdadPaymentCore.SOAP
             return onlineStatus;
         }
 
-        //Mellat
         public bool RequestReversal(string username, string pass, string onlineId)
         {
             bool result = false;
             try
             {
-                result = paymentService.ReqReversal(new ReqReversalRequest(username, pass, onlineId));
+                result = paymentService.RequestReversal(username, pass, onlineId);
             }
             catch (Exception ex)
             {
@@ -154,7 +148,6 @@ namespace BamdadPaymentCore.SOAP
             return false;
         }
 
-        //On mellat
         public DataTable RequestSettleOnline(string username, string pass, string onlineId)
         {
             DataTable dataTable = new DataTable()
@@ -172,7 +165,6 @@ namespace BamdadPaymentCore.SOAP
             return dataTable;
         }
 
-        // Asan 
         public bool ReqVerify(string username, string pass, string onlineId)
         => paymentService.ReqVerify(new VerifyRequest(username, pass, onlineId));
 
@@ -190,7 +182,5 @@ namespace BamdadPaymentCore.SOAP
 
             return result;
         }
-
-
     }
 }

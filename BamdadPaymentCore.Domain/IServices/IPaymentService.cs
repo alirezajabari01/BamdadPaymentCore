@@ -16,8 +16,6 @@ namespace BamdadPaymentCore.Domain.IServices
 
         bool RequestReversal(string username, string pass, string onlineId);
 
-        string ProcessAsanPardakhtPayment(string onlineId);
-
         DataTable RequestSettleOnline(SettleOnlineRequest request);
 
         bool ReqVerify(VerifyRequest request);
@@ -26,18 +24,11 @@ namespace BamdadPaymentCore.Domain.IServices
 
         string FreePayment(string onlineId);
 
-
-        string GetOnlineId(GetOnlineIdRequest request);
-
-        string GetOnlineIdkind(GetOnlineIdkindRequest request);
-
-        string GetOnlineIdWithSettle(GetOnlineIdWithSettleRequest request);
-
         DataTable GetOnlineStatus(GetOnlineStatusParameter request);
 
         bool ReqRefund(ReqRefundRequest request);
 
-        bool ReqReversal(ReqReversalRequest request);
+       // bool ReqReversal(ReqReversalRequest request);
 
         DataTable ReqSettleOnline(ReqSettleOnlineRequest request);
 

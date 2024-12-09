@@ -1,4 +1,5 @@
 ﻿using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.ControllerDto;
 using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
@@ -17,27 +18,30 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IBankService asanRestService
+    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
         , IPaymentGateway mellatPaymentGateway, IBamdadPaymentRepository paymentRepository) : ISendToBankService
     {
 
-        public string SendToBank(string onlineId)
+        public SendToBankResultVm SendToBank(string onlineId)
         {
+            var res = new SendToBankResultVm();
             SelectPaymentDetailResult paymentDetail = null;
 
             if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
-            if (paymentDetail is null || paymentDetail.Online_Status == true) return SiteErrorResponse.PaymentNotValid;
+            if (paymentDetail is null || paymentDetail.Online_Status == true) return res;
 
-            if (paymentDetail.Online_Price == 0) return paymentService.FreePayment(onlineId);
+            if (paymentDetail.Online_Price == 0) return new SendToBankResultVm(Url: paymentService.FreePayment(onlineId), onlineId);
 
-            if (paymentDetail.BankCode == nameof(BankCode.Mellat)) return SendToMellatPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Mellat))
+                return new SendToBankResultVm(paymentGatewaySetting.Value.MellatGateWay, SendToMellatPaymentGateway(paymentDetail, onlineId));
 
-            if (paymentDetail.BankCode == nameof(BankCode.Parsian)) return SendToPasianPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Parsian)) return res;
 
-            if (paymentDetail.BankCode == nameof(BankCode.Asan)) return SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId);
+            if (paymentDetail.BankCode == nameof(BankCode.Asan))
+                return new SendToBankResultVm(paymentGatewaySetting.Value.AsanpardakhtGateWay, asanRestService.SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId));
 
-            return SiteErrorResponse.NullOrEmptyOnlineId;
+            return res;
         }
 
         public string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
@@ -50,40 +54,21 @@ namespace BamdadPaymentCore.Domain.Services
              ? PayNormalMelat(paymentDetail, onlineId, date, time, paymentGatewaySetting.Value.MelatReturnBankWithAccept, paymentGatewaySetting.Value.MelatReturnBank)
              : PayWithKind(paymentDetail, onlineId, date, time, paymentGatewaySetting.Value.MelatReturnBankWithAccept, paymentGatewaySetting.Value.MelatReturnBank);
 
-
-            if (string.IsNullOrEmpty(mellatResponse)) return SiteErrorResponse.PaymentNotValid;
-
             string[] strArray = mellatResponse.Split(',');
 
-            return strArray[0] == "0"
-                ? $"<script language='javascript' type='text/javascript'> postRefId('" + strArray[1] + "');</script> "
-                : SiteErrorResponse.BankConnectionFailed + strArray[0];
+            if (string.IsNullOrEmpty(mellatResponse) || strArray[0] != "0") return SiteErrorResponse.BankConnectionFailed;
+
+            return strArray[1];
+            //return $"<script language='javascript' type='text/javascript'> postRefId('" + strArray[1] + "');</script> ";
         }
 
         public string SendToPasianPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
         {
+
             throw new NotImplementedException();
         }
 
-        public string SendToAsanPardakhtPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
-        {
-            var paymentToken = new RequestCommand
-            (
-             Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-             Convert.ToInt32(ServiceTypeEnum.Sale),
-             Convert.ToInt64(onlineId),
-             Convert.ToUInt64(paymentDetail.Online_Price.ToString()),
-              $"{paymentGatewaySetting.Value.MelatReturnBank}?invoiceID={onlineId}",
-             "پرداخت"
-            );
 
-            var tokenResult = asanRestService.GetToken<RequestCommand, RequestTokenVm>(paymentToken, paymentDetail).Result;
-
-            if (tokenResult.ResCode == 0)
-                return RedirectWithPost.PreparePostForm(paymentGatewaySetting.Value.AsanpardakhtGateWay, new Dictionary<string, string> { { "RefId", tokenResult.RefId } });
-
-            return tokenResult.ResMessage + string.Format(" ({0})", tokenResult.ResCode);
-        }
 
 
         #region PrivateMethods

@@ -18,13 +18,23 @@ using System.Threading.Tasks;
 using System.Web;
 using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+using Microsoft.AspNetCore.Http;
+using BamdadPaymentCore.Domain.Services;
+using BamdadPaymentCore.Domain.IRepositories;
+using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Common;
+using Microsoft.Extensions.Options;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models;
+using PGTesterApp.Business;
 
 namespace RestService
 {
-    public class AsanResetService : IBankService
+    public class AsanResetService(IBamdadPaymentRepository repository, IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
     {
         #region PrivateFields
+
         private const string REST_URL = "https://ipgrest.asanpardakht.ir/";
+
         #endregion
 
 
@@ -76,44 +86,6 @@ namespace RestService
             catch (TaskCanceledException)
             {
                 return new ReverseVm() { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = "Gateway Timeout" };
-            }
-        }
-
-        async Task<TResult> IBankService.GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
-        {
-            var refid = string.Empty;
-
-            var client = CreateClient(paymentDetail.Bank_User,paymentDetail.Bank_Pass);
-
-            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
-
-            try
-            {
-                var responseMessage = client.PostAsync($"v1/Token", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult();
-                switch ((int)responseMessage.StatusCode)
-                {
-                    case 200:
-                        refid = await responseMessage.Content.ReadAsStringAsync();
-                        return new TResult { RefId = JsonConvert.DeserializeObject<string>(refid), ResCode = 0 };
-                    case 489:
-                        return new TResult { ResCode = 489, ResMessage = "duplicate local invoice id" };
-                    case 484:
-                        return new TResult { ResCode = 484, ResMessage = "internal error for other reasons" };
-                    case 486:
-                        return new TResult { ResCode = 486, ResMessage = "amount is not in range" };
-                    case 504:
-                        return new TResult { ResCode = 504, ResMessage = responseMessage.ReasonPhrase };
-                    default:
-                        return new TResult { ResCode = (int)responseMessage.StatusCode, ResMessage = "unknown" };
-                }
-            }
-            catch (TaskCanceledException)
-            {
-                return new TResult { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = "Gateway Timeout" };
-            }
-            catch (Exception ex)
-            {
-                return new TResult { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = ex.Message };
             }
         }
 
@@ -268,7 +240,7 @@ namespace RestService
 
         public async Task<CancelResultVm> CancelTransaction(AsanRestRequest requst)
         {
-            var client = CreateClient(requst.BankUser,requst.BankPassword);
+            var client = CreateClient(requst.BankUser, requst.BankPassword);
             CancelCommand cancelCommand = new CancelCommand()
             {
                 merchantConfigurationId = requst.merchantConfigurationId,
@@ -322,6 +294,143 @@ namespace RestService
             }
         }
 
+        public async Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail) where TRequest : ITokenCommand where TResult : class, ITokenVm, new()
+        {
+            var refid = string.Empty;
+
+            var client = CreateClient(paymentDetail.Bank_User, paymentDetail.Bank_Pass);
+
+            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+            try
+            {
+                var responseMessage = client.PostAsync($"v1/Token", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult();
+                switch ((int)responseMessage.StatusCode)
+                {
+                    case 200:
+                        refid = await responseMessage.Content.ReadAsStringAsync();
+                        return new TResult { RefId = JsonConvert.DeserializeObject<string>(refid), ResCode = 0 };
+                    case 489:
+                        return new TResult { ResCode = 489, ResMessage = "duplicate local invoice id" };
+                    case 484:
+                        return new TResult { ResCode = 484, ResMessage = "internal error for other reasons" };
+                    case 486:
+                        return new TResult { ResCode = 486, ResMessage = "amount is not in range" };
+                    case 504:
+                        return new TResult { ResCode = 504, ResMessage = responseMessage.ReasonPhrase };
+                    default:
+                        return new TResult { ResCode = (int)responseMessage.StatusCode, ResMessage = "unknown" };
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                return new TResult { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = "Gateway Timeout" };
+            }
+            catch (Exception ex)
+            {
+                return new TResult { ResCode = (int)HttpStatusCode.GatewayTimeout, ResMessage = ex.Message };
+            }
+        }
+
+        public string Return(HttpRequest Request)
+          => string.IsNullOrEmpty(Request.Form["PaygateTranId"])
+          ? CancelPayment(Request.Query["invoiceid"])
+          : ProcessAsanPardakhtPayment(Request.Query["invoiceid"]);
+
+        public AsanTransactionResult GetTransationResultFromAsanPardakht(string onlineId, SelectPaymentDetailResult paymentDetail)
+        {
+            var tranReq = new TransactionResultRequest
+            (
+                paymentGatewaySetting.Value.AsanMerchantId,
+                onlineId,
+                paymentDetail.Bank_User,
+                paymentDetail.Bank_Pass
+            );
+
+            var tranResult = TransactionResult(tranReq).Result;
+
+            string saleOrderId = onlineId;
+            string refId = tranResult.RefId;
+            string saleReferenceId = tranResult.PayGateTranID.ToString();
+            string cardHolderInfo = tranResult.CardNumber;
+            string referenceNumber = tranResult.Rrn;
+
+            repository.InsertTransactionResult
+                (new InsertTransactionResultParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, tranResult.ResCode, cardHolderInfo));
+
+            return new(refId, saleReferenceId, cardHolderInfo, referenceNumber, tranResult.ResMessage, tranResult.ResCode);
+        }
+
+        public SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId)
+        {
+            var settleCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
+                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+
+            var settleRes = SettleTransaction(settleCommand).Result;
+
+            if (settleRes.ResCode != 0)
+            {
+                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(onlineId, settleRes.ResCode));
+            }
+
+            repository.UpdateOnlinePayResWithSettle(
+              new UpdateOnlinePayResWithSettleParameter(ConvertToInt(onlineId)));
+
+            return settleRes;
+        }
+
+        public string SendToAsanPardakhtPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
+        {
+            var paymentToken = new RequestCommand
+            (
+             Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+             Convert.ToInt32(ServiceTypeEnum.Sale),
+             Convert.ToInt64(onlineId),
+             Convert.ToUInt64(paymentDetail.Online_Price.ToString()),
+              $"{paymentGatewaySetting.Value.MelatReturnBank}?invoiceID={onlineId}",
+             "پرداخت"
+            );
+
+            var tokenResult = GetToken<RequestCommand, RequestTokenVm>(paymentToken, paymentDetail).Result;
+
+            if (tokenResult.ResCode == 0)
+                return tokenResult.RefId;
+
+
+            return tokenResult.ResMessage + string.Format(" ({0})", tokenResult.ResCode);
+        }
+
+        public bool Cancel(string onlineId)
+        {
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+            if (paymentDetail == null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0) throw new PaymentDetailException();
+
+            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
+
+            if (tranResult.resCode != 0) throw new GetTransationResultException();
+
+            var CancelCommand = new AsanRestRequest()
+            {
+                merchantConfigurationId = ConvertToInt(paymentDetail.Bank_MerchantID),
+                payGateTranId = ulong.Parse(tranResult.saleReferenceId),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+
+            var cancelResult = CancelTransaction(CancelCommand).Result;
+
+            if (cancelResult.ResCode != 200) throw new CancelTransationException();
+
+            repository.UpdateOnlinePayRefund(new UpdateOnlinePayRefundParameter(ConvertToInt(onlineId), cancelResult.ResCode));
+
+            return true;
+        }
+
         #region PrivateMethods
 
         private HttpClient CreateClient(string bankUser, string bankPass)
@@ -339,6 +448,75 @@ namespace RestService
             return client;
         }
 
+        private string CancelPayment(string onlineId)
+             => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, Convert.ToInt32(onlineId),
+                     "cancel", "Failed", -1, "use cancel payment"))
+                 .Site_ReturnUrl;
+
+        public string ProcessAsanPardakhtPayment(string onlineId)
+        {
+            string localInvoiceId = onlineId;
+
+            if (string.IsNullOrEmpty(localInvoiceId)) return SiteErrorResponse.NullOrEmptyOnlineId;
+
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
+
+            if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
+
+            //Free Payment
+            if (paymentDetail.Online_Price == 0) return FreePayment(localInvoiceId);
+
+            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
+
+            if (tranResult.resCode == 911) return CancelPayment(onlineId);
+
+            if (tranResult.resCode != 0)
+                return UpdateOnlinePayFailed(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId,
+                    tranResult.resCode.ToString(), tranResult.cardHolderInfo);
+
+            var verifyCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+            var verifyRes = VerifyTransaction(verifyCommand).Result;
+
+            if (verifyRes.ResCode != 0)
+            {
+                return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
+                     ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
+                     tranResult.cardHolderInfo)).Site_ReturnUrl;
+            }
+
+            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
+                ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
+
+            if (paymentDetail.AutoSettle is false) return url;
+
+            var settleRes = SettleAsan(tranResult, paymentDetail, onlineId);
+
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
+              ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
+
+            if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
+
+            return SiteErrorResponse.NullOrEmptyOnlineId;
+        }
+
+        public string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo,
+            string orderNo, string errorCode, string cardHolderInfo)
+            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,
+                    ConvertToInt(onlineId), transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo))
+                .Site_ReturnUrl;
+
+        private int ConvertToInt(string value) => Convert.ToInt32(value);
+
+        private string FreePayment(string onlineId)
+           => repository
+               .UpdateOnlinePayment(new UpdateOnlinePayParameter("", ConvertToInt(onlineId), "Free", "Free", -1, ""))
+               .Site_ReturnUrl;
         #endregion
     }
 }

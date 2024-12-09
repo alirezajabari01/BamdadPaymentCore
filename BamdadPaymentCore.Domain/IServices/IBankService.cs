@@ -10,10 +10,6 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IBankService
     {
-        public Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
-            where TRequest : ITokenCommand
-            where TResult : class, ITokenVm, new();
-
         public Task<VerifyVm> VerifyTransaction(AsanRestRequest requst);
 
         public Task<SettleVm> SettleTransaction(AsanRestRequest requst);

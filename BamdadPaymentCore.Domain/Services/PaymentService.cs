@@ -35,10 +35,8 @@ namespace BamdadPaymentCore.Domain.Services
         IBamdadPaymentRepository repository,
         IHttpContextAccessor httpContextAccessor,
         IPaymentGateway mellatGateway,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IPaymentService
+        IOptions<PaymentGatewaySetting> paymentGatewaySetting,IAsanRestService asanRestService) : IPaymentService
     {
-        IBankService asanRestService = new AsanResetService();
-
         #region PrivateFields
 
         private const string AuthenticationFailResponse = "-2,Authenticationfailed";
@@ -51,29 +49,16 @@ namespace BamdadPaymentCore.Domain.Services
                     "cancel", "Failed", -1, "use cancel payment"))
                 .Site_ReturnUrl;
 
-        public string GetOnlineId(GetOnlineIdRequest request)
-            => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId,
-                "0");
-
-        public string GetOnlineIdkind(GetOnlineIdkindRequest request)
-            => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId,
-                request.Kind);
-
-        public string GetOnlineIdWithSettle(GetOnlineIdWithSettleRequest request)
-            => GetOnlineIdDifferentTypes(request.Username, request.Password, request.Price, request.Desc, request.ReqId,
-                request.Kind, true);
-
         public DataTable GetOnlineStatus(GetOnlineStatusParameter request)
             => Authenticate(request.Username, request.Password) is null
                 ? Authenticationfailed()
                 : repository.SelectOnlinePay(new SelectOnlinePayParameter(request.OnlineId)).ListToDataTable();
 
-        //changed to asan
         public bool ReqRefund(ReqRefundRequest request)
-            => Authenticate(request.Username, request.Password) is not null ? Cancel(request.OnlineId) : false;
+            => Authenticate(request.Username, request.Password) is not null ? asanRestService.Cancel(request.OnlineId) : false;
 
-        public bool ReqReversal(ReqReversalRequest request)
-            => Authenticate(request.Username, request.Password) is not null ? ReversalRequest(request.OnlineId) : false;
+        //public bool ReqReversal(ReqReversalRequest request)
+        //    => Authenticate(request.Username, request.Password) is not null ?as. ReversalRequest(request.OnlineId) : false;
 
         public DataTable ReqSettleOnline(ReqSettleOnlineRequest request)
         {
@@ -86,11 +71,11 @@ namespace BamdadPaymentCore.Domain.Services
             if (paymentDetail is null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0)
                 throw new PaymentDetailException(); 
 
-            var tranResult = GetTransationResultFromAsanPardakht(request.OnlineId, paymentDetail);
+            var tranResult = asanRestService.GetTransationResultFromAsanPardakht(request.OnlineId, paymentDetail);
 
             if (tranResult.resCode != 0) return Authenticationfailed();
 
-            var settleResult = SettleAsan(tranResult, paymentDetail, request.OnlineId);
+            var settleResult = asanRestService.SettleAsan(tranResult, paymentDetail, request.OnlineId);
 
             var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
               ConvertToInt(request.OnlineId), tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
@@ -174,66 +159,16 @@ namespace BamdadPaymentCore.Domain.Services
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(request.Username, request.Password);
             if (siteAuthenticationResult is null) return Authenticationfailed();
 
-            ProcessAsanPardakhtPayment(request.OnlineId);
+            asanRestService.ProcessAsanPardakhtPayment(request.OnlineId);
 
             return GetOnlineStatus(new GetOnlineStatusParameter(request.Username, request.Password, request.OnlineId));
-        }
-
-        public string ProcessAsanPardakhtPayment(string onlineId)
-        {
-            string localInvoiceId = onlineId;
-
-            if (string.IsNullOrEmpty(localInvoiceId)) return SiteErrorResponse.NullOrEmptyOnlineId;
-
-            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
-
-            if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
-
-            //Free Payment
-            if (paymentDetail.Online_Price == 0) return FreePayment(localInvoiceId);
-
-            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
-
-            if (tranResult.resCode == 911) return CancelPayment(onlineId);
-
-            if (tranResult.resCode != 0)
-                return UpdateOnlinePayFailed(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId,
-                    tranResult.resCode.ToString(), tranResult.cardHolderInfo);
-
-            var verifyCommand = new AsanRestRequest
-            {
-                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
-                BankUser = paymentDetail.Bank_User,
-                BankPassword = paymentDetail.Bank_Pass,
-            };
-            var verifyRes = asanRestService.VerifyTransaction(verifyCommand).Result;
-
-            if (verifyRes.ResCode != 0)
-            {
-                return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
-                     ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
-                     tranResult.cardHolderInfo)).Site_ReturnUrl;
-            }
-
-            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-                ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
-
-            if (paymentDetail.AutoSettle is false) return url;
-
-            var settleRes = SettleAsan(tranResult, paymentDetail, onlineId);
-
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-              ConvertToInt(onlineId), tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
-
-            if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
-
-            return SiteErrorResponse.NullOrEmptyOnlineId;
         }
 
         public bool RequestReversal(string username, string pass, string onlineId)
         {
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+
+            if (paymentDetail.Online_Status == true) throw new PaymentDetailException();
 
             var tranReq = new TransactionResultRequest
             (
@@ -266,58 +201,7 @@ namespace BamdadPaymentCore.Domain.Services
         }
 
 
-
         #region PrivateMethods
-
-
-        private record AsanTransactionResult(string refId, string saleReferenceId, string cardHolderInfo, string referenceNumber, string resMessage, int resCode);
-
-        private AsanTransactionResult GetTransationResultFromAsanPardakht(string onlineId, SelectPaymentDetailResult paymentDetail)
-        {
-            var tranReq = new TransactionResultRequest
-            (
-                paymentGatewaySetting.Value.AsanMerchantId,
-                onlineId,
-                paymentDetail.Bank_User,
-                paymentDetail.Bank_Pass
-            );
-
-            var tranResult = asanRestService.TransactionResult(tranReq).Result;
-
-            string saleOrderId = onlineId;
-            string refId = tranResult.RefId;
-            string saleReferenceId = tranResult.PayGateTranID.ToString();
-            string cardHolderInfo = tranResult.CardNumber;
-            string referenceNumber = tranResult.Rrn;
-
-            repository.InsertTransactionResult
-                (new InsertTransactionResultParameter(referenceNumber, ConvertToInt(saleOrderId), refId, saleReferenceId, tranResult.ResCode, cardHolderInfo));
-
-            return new(refId, saleReferenceId, cardHolderInfo, referenceNumber, tranResult.ResMessage, tranResult.ResCode);
-        }
-
-        private SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId)
-        {
-            var settleCommand = new AsanRestRequest
-            {
-                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
-                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
-                BankUser = paymentDetail.Bank_User,
-                BankPassword = paymentDetail.Bank_Pass,
-            };
-
-            var settleRes = asanRestService.SettleTransaction(settleCommand).Result;
-
-            if (settleRes.ResCode != 0)
-            {
-                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(onlineId, settleRes.ResCode));
-            }
-
-            repository.UpdateOnlinePayResWithSettle(
-              new UpdateOnlinePayResWithSettleParameter(ConvertToInt(onlineId)));
-
-            return settleRes;
-        }
 
         private DataTable GetOnlineStatus(string onlineId)
             => repository.SelectOnlinePay(new SelectOnlinePayParameter(onlineId)).ListToDataTable();
@@ -358,35 +242,35 @@ namespace BamdadPaymentCore.Domain.Services
             return dataTable;
         }
 
-        private bool ReversalRequest(string onlineId)
-        {
-            bool result = false;
-            string errorCode = string.Empty;
+        //private bool ReversalRequest(string onlineId)
+        //{
+        //    bool result = false;
+        //    string errorCode = string.Empty;
 
-            SelectBankDetailResult SelectBankDetailResult =
-                repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).SingleOrDefault();
+        //    SelectBankDetailResult SelectBankDetailResult =
+        //        repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).Single();
 
-            SelectOnlinePayDetailResult SelectOnlinePayDetailResult = repository
-                .SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
+        //    SelectOnlinePayDetailResult SelectOnlinePayDetailResult = repository
+        //        .SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).First();
 
-            if (SelectBankDetailResult is not null || SelectOnlinePayDetailResult is not null)
-            {
-                if (SelectOnlinePayDetailResult.Online_Status == false)
-                {
-                    errorCode = mellatGateway.bpReversalRequest(new bpReversalRequest(new bpReversalRequestBody
-                        (long.Parse(SelectBankDetailResult.Bank_MerchantID), SelectBankDetailResult.Bank_User,
-                            SelectBankDetailResult.Bank_Pass, long.Parse(onlineId), long.Parse(onlineId),
-                            long.Parse(SelectOnlinePayDetailResult.Online_OrderNo.ToString()))
-                    )).Body.@return;
+        //    if (SelectBankDetailResult is not null || SelectOnlinePayDetailResult is not null)
+        //    {
+        //        if (SelectOnlinePayDetailResult.Online_Status == false)
+        //        {
+        //            errorCode = mellatGateway.bpReversalRequest(new bpReversalRequest(new bpReversalRequestBody
+        //                (long.Parse(SelectBankDetailResult.Bank_MerchantID), SelectBankDetailResult.Bank_User,
+        //                    SelectBankDetailResult.Bank_Pass, long.Parse(onlineId), long.Parse(onlineId),
+        //                    long.Parse(SelectOnlinePayDetailResult.Online_OrderNo.ToString()))
+        //            )).Body.@return;
 
-                    repository.UpdateOnlinePayReversal(
-                        new UpdateOnlinePayReversalParameter(ConvertToInt(onlineId), ConvertToInt(errorCode)));
-                    result = errorCode == "0";
-                }
-            }
+        //            repository.UpdateOnlinePayReversal(
+        //                new UpdateOnlinePayReversalParameter(ConvertToInt(onlineId), ConvertToInt(errorCode)));
+        //            result = errorCode == "0";
+        //        }
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
 
         //public bool RefundRequest(string onlineId, string refundAmount)
         //{
@@ -426,96 +310,72 @@ namespace BamdadPaymentCore.Domain.Services
         //    return result;
         //}
 
-        public bool Cancel(string onlineId)
-        {
-            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
-            if (paymentDetail == null || paymentDetail.Online_Status == false || paymentDetail.Online_Price == 0) throw new PaymentDetailException();
+       
 
-            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
+        //public bool SettleRequest(string onlineId)
+        //{
+        //    //TODO SiteError
 
-            if (tranResult.resCode != 0) throw new GetTransationResultException();
+        //    bool result = false;
+        //    string settleResult = "0";
+        //    string verifyResult = "0";
+        //    string inquieryResult = "0";
 
-            var CancelCommand = new AsanRestRequest()
-            {
-                merchantConfigurationId = ConvertToInt(paymentDetail.Bank_MerchantID),
-                payGateTranId = ulong.Parse(tranResult.saleReferenceId),
-                BankUser = paymentDetail.Bank_User,
-                BankPassword = paymentDetail.Bank_Pass,
-            };
+        //    var SelectBankDetailResult =
+        //        repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).FirstOrDefault();
 
-            var cancelResult = asanRestService.CancelTransaction(CancelCommand).Result;
+        //    var SelectOnlinePayDetailResult = repository
+        //        .SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
 
-            if (cancelResult.ResCode != 200) throw new CancelTransationException();
+        //    var mellatRequest = new
+        //    {
+        //        merchantID = long.Parse(SelectBankDetailResult.Bank_MerchantID),
+        //        BankUser = SelectBankDetailResult.Bank_User,
+        //        BankPass = SelectBankDetailResult.Bank_Pass,
+        //        OrderID = long.Parse(onlineId),
+        //        SaleOrderID = long.Parse(onlineId),
+        //        OrderNo = long.Parse(SelectOnlinePayDetailResult.Online_OrderNo)
+        //    };
 
-            repository.UpdateOnlinePayRefund(new UpdateOnlinePayRefundParameter(ConvertToInt(onlineId), cancelResult.ResCode));
+        //    if (SelectBankDetailResult is not null || SelectOnlinePayDetailResult is not null)
+        //    {
+        //        if (SelectOnlinePayDetailResult.IsSettle != 1)
+        //        {
+        //            verifyResult = mellatGateway.bpVerifyRequest(new bpVerifyRequest(new bpVerifyRequestBody(
+        //                mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
+        //                mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
 
-            return true;
-        }
+        //            if (verifyResult != "0")
+        //            {
+        //                inquieryResult = mellatGateway.bpInquiryRequest(new bpInquiryRequest(new bpInquiryRequestBody(
+        //                    mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass,
+        //                    mellatRequest.OrderID,
+        //                    mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
+        //            }
 
-        public bool SettleRequest(string onlineId)
-        {
-            //TODO SiteError
+        //            if (inquieryResult != "0")
+        //            {
+        //                if (verifyResult == "0" || inquieryResult == "0")
+        //                    repository.UpdateOnlinePayResWithSettle(
+        //                        new UpdateOnlinePayResWithSettleParameter(ConvertToInt(onlineId)));
 
-            bool result = false;
-            string settleResult = "0";
-            string verifyResult = "0";
-            string inquieryResult = "0";
+        //                repository.UpdateOnlinePaySettleFailed(
+        //                    new UpdateOnlinePayResWithSettleFailedParameter(onlineId, ConvertToInt(verifyResult)));
+        //            }
+        //            else
+        //            {
+        //                settleResult = mellatGateway.bpSettleRequest(new bpSettleRequest(new bpSettleRequestBody(
+        //                    mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass,
+        //                    mellatRequest.OrderID,
+        //                    mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
+        //            }
 
-            var SelectBankDetailResult =
-                repository.SelectBankDetail(new SelectBankDetailParameter(onlineId)).FirstOrDefault();
+        //            result = true;
+        //        }
+        //    }
 
-            var SelectOnlinePayDetailResult = repository
-                .SelectOnlinePayDetail(new SelectOnlinePayDetailParameter(onlineId)).FirstOrDefault();
-
-            var mellatRequest = new
-            {
-                merchantID = long.Parse(SelectBankDetailResult.Bank_MerchantID),
-                BankUser = SelectBankDetailResult.Bank_User,
-                BankPass = SelectBankDetailResult.Bank_Pass,
-                OrderID = long.Parse(onlineId),
-                SaleOrderID = long.Parse(onlineId),
-                OrderNo = long.Parse(SelectOnlinePayDetailResult.Online_OrderNo)
-            };
-
-            if (SelectBankDetailResult is not null || SelectOnlinePayDetailResult is not null)
-            {
-                if (SelectOnlinePayDetailResult.IsSettle != 1)
-                {
-                    verifyResult = mellatGateway.bpVerifyRequest(new bpVerifyRequest(new bpVerifyRequestBody(
-                        mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass, mellatRequest.OrderID,
-                        mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
-
-                    if (verifyResult != "0")
-                    {
-                        inquieryResult = mellatGateway.bpInquiryRequest(new bpInquiryRequest(new bpInquiryRequestBody(
-                            mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass,
-                            mellatRequest.OrderID,
-                            mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
-                    }
-
-                    if (inquieryResult != "0")
-                    {
-                        if (verifyResult == "0" || inquieryResult == "0")
-                            repository.UpdateOnlinePayResWithSettle(
-                                new UpdateOnlinePayResWithSettleParameter(ConvertToInt(onlineId)));
-
-                        repository.UpdateOnlinePaySettleFailed(
-                            new UpdateOnlinePayResWithSettleFailedParameter(onlineId, ConvertToInt(verifyResult)));
-                    }
-                    else
-                    {
-                        settleResult = mellatGateway.bpSettleRequest(new bpSettleRequest(new bpSettleRequestBody(
-                            mellatRequest.merchantID, mellatRequest.BankUser, mellatRequest.BankPass,
-                            mellatRequest.OrderID,
-                            mellatRequest.SaleOrderID, mellatRequest.OrderNo))).Body.@return;
-                    }
-
-                    result = true;
-                }
-            }
-
-            return result;
-        }
+        //    return result;
+        //}
 
 
         #endregion

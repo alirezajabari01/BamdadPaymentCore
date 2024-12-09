@@ -13,14 +13,15 @@ namespace BamdadPaymentCore.Controllers
     public class HomeController(
         IPaymentService paymentService,
         IHttpContextAccessor httpContextAccessor,
-        IBankService asanResetService,
         IBamdadPaymentRepository bamdadPaymentRepository,
         IOptions<PaymentGatewaySetting> paymentGatewaySetting) : ControllerBase
     {
         public IActionResult Index()
-        
-        
+
+
         {
+
+            //var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mft", "241437", "534"));
             // var t =paymentService.ReqSettleOnline(new ReqSettleOnlineRequest("asan", "mft", 241419.ToString()));
             //var updateResult = bamdadPaymentRepository.UpdateOnlinePayment(new UpdateOnlinePayParameter("060241209938",
             //  241415, "e29cc467bc48c25a9", "2055610183", 0, "610433xxxx6724"));
@@ -42,8 +43,8 @@ namespace BamdadPaymentCore.Controllers
 
             //var t = new AsanPardakhtProvider("","as",);
             //var t = paymentService.UpdateOnlinePayFailed("241241", "cancel", "", "-1", "use cancel payment");
-            var t = paymentService.GetOnlineIdWithSettle(new GetOnlineIdWithSettleRequest("asan", "mft", "100000", "sdf", "45","0"));
-                //var t = paymentService.GetOnlineIdWithSettle(new GetOnlineIdWithSettleRequest("asan", "mft", "100000", "sdf", "45"));
+            //var t = paymentService.GetOnlineIdWithSettle(new GetOnlineIdWithSettleRequest("asan", "mft", "100000", "sdf", "45","0"));
+            var t = paymentService.GetOnlineIdDifferentTypes("asan", "mft", "100000", "sdf", "45","0",true);
             //var t = paymentService.GetOnlineStatus(new GetOnlineStatusParameter("asan", "mft", "240914"));
             //var t = paymentService.ReqReversal(new Domain.SoapDto.Requests.ReqReversalRequest("asan", "mfyt", "508888888"));
             // var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mdft", "240914", "1000000"));
