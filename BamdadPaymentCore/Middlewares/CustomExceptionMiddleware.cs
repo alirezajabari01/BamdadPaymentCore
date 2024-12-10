@@ -1,11 +1,13 @@
 ﻿using BamdadPaymentCore.Domain.Exceptions;
+using BamdadPaymentCore.Domain.IRepositories;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 
 namespace BamdadPaymentCore.Middlewares
 {
     public class CustomExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        //TODO Site Error Should Be Added Here Too 
+
         public CustomExceptionMiddleware(RequestDelegate next)
         {
             _next = next;
@@ -17,10 +19,15 @@ namespace BamdadPaymentCore.Middlewares
             {
                 await _next(context);
             }
-            catch (AppException ex)
+            catch (Exception ex)
             {
-                var statusCode = ex.HttpStatusCode;
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                var bamdadPaymentRepository = context.RequestServices.GetService<IBamdadPaymentRepository>();
+
+                if (bamdadPaymentRepository != null)
+                {
+                    bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+                }
+
                 await context.Response.WriteAsync(ex.Message);
             }
         }

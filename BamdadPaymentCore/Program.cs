@@ -16,6 +16,8 @@ if (!app.Environment.IsDevelopment())
    
 }
 
+app.UseMiddleware<CustomExceptionMiddleware>();
+
 app.UseStaticFiles();
 
 app.UseRouting();

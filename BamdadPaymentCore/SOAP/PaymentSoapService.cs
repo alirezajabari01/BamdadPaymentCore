@@ -38,9 +38,17 @@ namespace BamdadPaymentCore.SOAP
 
         public string normal(string username, string pass, string price, string desc, string reqId)
         {
-            return GetOnlineId(username, pass, price, desc, reqId);
+            string result = string.Empty;
+            try
+            {
+                result = GetOnlineId(username, pass, price, desc, reqId);
+            }
+            catch (Exception ex)
+            {
+                paymentService.InsertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+            }
 
-
+            return result;
         }
 
         public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind)
