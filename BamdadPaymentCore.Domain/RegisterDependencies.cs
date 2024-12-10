@@ -9,6 +9,7 @@ using BamdadPaymentCore.Domain.Services;
 using bpm.shaparak.ir;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -20,12 +21,8 @@ namespace BamdadPaymentCore.Domain
 {
     public static class RegisterDependencies
     {
-        private const string connectionString = "Persist Security Info=True;Initial Catalog=NimkatOnlinePayment;User ID=sa;password=andIShe2019$$;data source=185.13.229.227;TrustServerCertificate=True;";
-
         public static void RegisterDomainDependencies(this IServiceCollection services)
         {
-            services.AddDbContext<NimkatOnlineContext>(options => options.UseSqlServer(connectionString));
-
             services.AddHttpContextAccessor();
 
             services.AddScoped<IPaymentService, PaymentService>();
@@ -47,6 +44,10 @@ namespace BamdadPaymentCore.Domain
 
         public static void ConfigureOptionPattern(this WebApplicationBuilder builder)
         {
+            var connectionString = builder.Configuration.GetConnectionString("Sql");
+
+            builder.Services.AddDbContext<NimkatOnlineContext>(options => options.UseSqlServer(connectionString));
+
             builder.Services.Configure<PaymentGatewaySetting>(builder.Configuration.GetSection("PaymentSettings"));
         }
     }
