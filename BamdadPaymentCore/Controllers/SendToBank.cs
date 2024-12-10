@@ -16,6 +16,7 @@ namespace BamdadPaymentCore.Controllers
                 {
                     return Redirect(result.Url);
                 }
+                ViewBag.Message = result.Message;
                 return View();
             }
 

@@ -34,7 +34,6 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
         #endregion
 
-
         public async Task<ReverseVm> ReverseTransaction(AsanRestRequest requst)
         {
             var client = CreateClient(requst.BankUser, requst.BankPassword);
@@ -389,7 +388,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
              Convert.ToInt32(ServiceTypeEnum.Sale),
              Convert.ToInt64(onlineId),
              Convert.ToUInt64(paymentDetail.Online_Price.ToString()),
-              $"{paymentGatewaySetting.Value.MelatReturnBank}?invoiceID={onlineId}",
+              $"{paymentGatewaySetting.Value.AsanCallBackUrl}?invoiceID={onlineId}",
              "پرداخت"
             );
 
@@ -450,17 +449,13 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                      "cancel", "Failed", -1, "use cancel payment"))
                  .Site_ReturnUrl;
 
-        public string ProcessAsanPardakhtPayment(string onlineId , SelectPaymentDetailResult paymentDetail)
+        public string ProcessAsanPardakhtPayment(string onlineId )
         {
-            
-
             if (string.IsNullOrEmpty(onlineId)) return SiteErrorResponse.NullOrEmptyOnlineId;
 
+             SelectPaymentDetailResult paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
             if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
-
-            //Free Payment
-            if (paymentDetail.Online_Price == 0) return FreePayment(onlineId);
 
             var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 

@@ -12,8 +12,6 @@ namespace BamdadPaymentCore.Domain.IServices
     {
         SendToBankResultVm SendToBank(string onlineId);
 
-        string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail,string onlineId);
-
         string SendToPasianPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId);
     }
 }

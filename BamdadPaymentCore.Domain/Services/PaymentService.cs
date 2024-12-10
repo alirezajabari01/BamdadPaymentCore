@@ -152,7 +152,7 @@ namespace BamdadPaymentCore.Domain.Services
             SiteAuthenticationResult? siteAuthenticationResult = Authenticate(request.Username, request.Password);
             if (siteAuthenticationResult is null) return Authenticationfailed();
 
-            asanRestService.ProcessAsanPardakhtPayment(request.OnlineId);
+            //asanRestService.ProcessAsanPardakhtPayment(request.OnlineId);
 
             return GetOnlineStatus(new GetOnlineStatusParameter(request.Username, request.Password, request.OnlineId));
         }

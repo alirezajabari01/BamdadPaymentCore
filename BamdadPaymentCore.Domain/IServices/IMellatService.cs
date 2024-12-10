@@ -3,6 +3,7 @@ using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.verify;
 using BamdadPaymentCore.Domain.Models.ServicesModels;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -14,16 +15,18 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IMellatService
     {
-        public Task<VerifyVm> VerifyTransaction(MellatRequest requst);
+        public string VerifyTransaction(MellatRequest requst);
 
-        public Task<SettleVm> SettleTransaction(MellatRequest requst);
+        public string SettleTransaction(MellatRequest requst);
 
-        public Task<ReverseVm> ReverseTransaction(MellatRequest requst);
+        public string ReverseTransaction(MellatRequest requst);
 
-        public Task<PaymentResultVm> InquiryTransaction(MellatRequest request);
+        public string InquiryTransaction(MellatRequest request);
 
-        public Task<CancelResultVm> CancelTransaction(MellatRequest requst);
+        public string RefundTransaction(MellatRequest request);
 
         string ProcessCallBackFromBank(HttpRequest Request);
+
+        string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId);
     }
 }

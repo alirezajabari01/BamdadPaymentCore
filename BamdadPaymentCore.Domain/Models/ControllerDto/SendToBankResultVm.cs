@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace BamdadPaymentCore.Domain.Models.ControllerDto
 {
-    public record SendToBankResultVm(string Url = "", string RefId = "");
+    public record SendToBankResultVm(string Url = "", string RefId = "", string Message = "");
 }

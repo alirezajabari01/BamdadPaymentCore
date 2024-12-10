@@ -13,47 +13,28 @@ using Microsoft.Extensions.Options;
 namespace BamdadPaymentCore.Domain.Services
 {
     public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
-        , IPaymentGateway mellatPaymentGateway, IBamdadPaymentRepository paymentRepository) : ISendToBankService
+        , IBamdadPaymentRepository paymentRepository, IMellatService mellatService) : ISendToBankService
     {
 
         public SendToBankResultVm SendToBank(string onlineId)
         {
-            var res = new SendToBankResultVm();
             SelectPaymentDetailResult paymentDetail = null;
 
             if (!string.IsNullOrWhiteSpace(onlineId)) paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
-            if (paymentDetail is null || paymentDetail.Online_Status == true) return res;
+            if (paymentDetail is null || paymentDetail.Online_Status == true) return new SendToBankResultVm(Message:"قبلا به بانک ارسال شده");
 
             if (paymentDetail.Online_Price == 0) return new SendToBankResultVm(Url: paymentService.FreePayment(onlineId), onlineId);
 
             if (paymentDetail.BankCode == nameof(BankCode.Mellat))
-                return new SendToBankResultVm(paymentGatewaySetting.Value.MellatGateWay, SendToMellatPaymentGateway(paymentDetail, onlineId));
+                return new SendToBankResultVm(paymentGatewaySetting.Value.MellatGateWay, mellatService.SendToMellatPaymentGateway(paymentDetail, onlineId));
 
-            if (paymentDetail.BankCode == nameof(BankCode.Parsian)) return res;
+            if (paymentDetail.BankCode == nameof(BankCode.Parsian)) return null;
 
             if (paymentDetail.BankCode == nameof(BankCode.Asan))
                 return new SendToBankResultVm(paymentGatewaySetting.Value.AsanpardakhtGateWay, asanRestService.SendToAsanPardakhtPaymentGateway(paymentDetail, onlineId));
 
-            return res;
-        }
-
-        public string SendToMellatPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
-        {
-            DateTime now = DateTime.Now;
-            string time = now.ToString("HHmmss");
-            string date = now.ToString("yyyyMMdd");
-
-            string mellatResponse = paymentDetail.Online_Kind == 1 || paymentDetail.Online_Kind == 0
-             ? PayNormalMelat(paymentDetail, onlineId, date, time, paymentGatewaySetting.Value.MelatReturnBankWithAccept, paymentGatewaySetting.Value.MelatReturnBank)
-             : PayWithKind(paymentDetail, onlineId, date, time, paymentGatewaySetting.Value.MelatReturnBankWithAccept, paymentGatewaySetting.Value.MelatReturnBank);
-
-            string[] strArray = mellatResponse.Split(',');
-
-            if (string.IsNullOrEmpty(mellatResponse) || strArray[0] != "0") return SiteErrorResponse.BankConnectionFailed;
-
-            return strArray[1];
-            //return $"<script language='javascript' type='text/javascript'> postRefId('" + strArray[1] + "');</script> ";
+            return new SendToBankResultVm(Message:"بانک مذکور یافت نشد");
         }
 
         public string SendToPasianPaymentGateway(SelectPaymentDetailResult paymentDetail, string onlineId)
@@ -61,52 +42,5 @@ namespace BamdadPaymentCore.Domain.Services
 
             throw new NotImplementedException();
         }
-
-
-
-
-        #region PrivateMethods
-
-        private string PayNormalMelat(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
-        => mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
-                long.Parse(paymentDetail.Bank_MerchantID.ToString())
-                , paymentDetail.Bank_User
-                , paymentDetail.Bank_Pass
-                , long.Parse(reqOnlineId)
-                , Convert.ToInt64(paymentDetail.Online_Price)
-                , date
-                , time
-                , "0"
-                , ReturnBank
-                , "0"
-                , ""
-                , ""
-                , ""
-                , ""
-                , null
-                ))).Body.@return;
-
-
-        private string PayWithKind(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
-        => mellatPaymentGateway.bpDynamicPayRequest(new bpDynamicPayRequest(new bpDynamicPayRequestBody(
-                long.Parse(paymentDetail.Bank_MerchantID.ToString())
-                , paymentDetail.Bank_User.ToString()
-                , paymentDetail.Bank_Pass.ToString()
-                , long.Parse(reqOnlineId)
-                , long.Parse(paymentDetail.Online_Price.ToString())
-                , date
-                , time
-                , "0"
-                , ReturnBank
-                , "0"
-                , long.Parse(paymentDetail.Online_Kind.ToString())
-                , ""
-                , ""
-                , ""
-                , ""
-                , null))).Body.@return;
-
-
-        #endregion
     }
 }

@@ -18,6 +18,8 @@ namespace BamdadPaymentCore.Domain.Common
 
         public string MelatReturnBank { get; set; }
 
+        public string AsanCallBackUrl { get; set; }
+
         public string MelatReturnBankWithAccept { get; set; }
 
         public string MellatGateWay { get; set; }

@@ -1,10 +1,7 @@
-using System.Diagnostics;
 using BamdadPaymentCore.Domain.Common;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.SoapDto.Requests;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Models;
+using BamdadPaymentCore.Domain.Models.ServicesModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -14,13 +11,12 @@ namespace BamdadPaymentCore.Controllers
         IPaymentService paymentService,
         IHttpContextAccessor httpContextAccessor,
         IBamdadPaymentRepository bamdadPaymentRepository,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting) : ControllerBase
+        IOptions<PaymentGatewaySetting> paymentGatewaySetting,
+        IMellatService mellatService) : ControllerBase
     {
         public IActionResult Index()
-
-
         {
-
+           var e = mellatService.SettleTransaction(new MellatRequest(4959335, "nimkat1398", "47637143", 241461, 241461, 292875991676));
             //var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mft", "241437", "534"));
             // var t =paymentService.ReqSettleOnline(new ReqSettleOnlineRequest("asan", "mft", 241419.ToString()));
             //var updateResult = bamdadPaymentRepository.UpdateOnlinePayment(new UpdateOnlinePayParameter("060241209938",
@@ -44,7 +40,7 @@ namespace BamdadPaymentCore.Controllers
             //var t = new AsanPardakhtProvider("","as",);
             //var t = paymentService.UpdateOnlinePayFailed("241241", "cancel", "", "-1", "use cancel payment");
             //var t = paymentService.GetOnlineIdWithSettle(new GetOnlineIdWithSettleRequest("asan", "mft", "100000", "sdf", "45","0"));
-            var t = paymentService.GetOnlineIdDifferentTypes("asan", "mft", "100000", "sdf", "45","0",true);
+            //var t = paymentService.GetOnlineIdDifferentTypes("asan", "mft", "100000", "sdf", "45","0",true);
             //var t = paymentService.GetOnlineStatus(new GetOnlineStatusParameter("asan", "mft", "240914"));
             //var t = paymentService.ReqReversal(new Domain.SoapDto.Requests.ReqReversalRequest("asan", "mfyt", "508888888"));
             // var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mdft", "240914", "1000000"));

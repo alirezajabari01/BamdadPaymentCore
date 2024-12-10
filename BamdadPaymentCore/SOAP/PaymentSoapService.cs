@@ -125,7 +125,7 @@ namespace BamdadPaymentCore.SOAP
             };
             try
             {
-                onlineStatus = paymentService.RequestSettleOnline(new SettleOnlineRequest(username, pass, onlineId));
+                onlineStatus = paymentService.ReqSettleOnline(new ReqSettleOnlineRequest(username, pass, onlineId));
             }
             catch (Exception ex)
             {
