@@ -41,7 +41,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = GetOnlineId(username, pass, price, desc, reqId);
+                result = GetOnlineIdWithSettle(username, pass, price, desc, reqId,"0");
             }
             catch (Exception ex)
             {

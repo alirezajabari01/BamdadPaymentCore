@@ -37,4 +37,5 @@ namespace BamdadPaymentCore.Domain.Common
     {
         public CancelTransationException() : base(" Cancel Transation Failed ", HttpStatusCode.InternalServerError) { }
     }
+
 }
