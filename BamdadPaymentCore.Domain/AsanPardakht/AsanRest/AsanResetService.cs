@@ -28,12 +28,6 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
     public class AsanResetService(IBamdadPaymentRepository repository, IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
     {
-        #region PrivateFields
-
-        private const string REST_URL = "https://ipgrest.asanpardakht.ir/";
-
-        #endregion
-
         public async Task<ReverseVm> ReverseTransaction(AsanRestRequest requst)
         {
             var client = CreateClient(requst.BankUser, requst.BankPassword);
@@ -433,7 +427,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
         {
             var client = new HttpClient
             {
-                BaseAddress = new Uri(REST_URL),
+                BaseAddress = new Uri(paymentGatewaySetting.Value.AsanRestURL),
                 Timeout = TimeSpan.FromSeconds(20)
             };
             client.DefaultRequestHeaders.Accept.Clear();
@@ -449,11 +443,11 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                      "cancel", "Failed", -1, "use cancel payment"))
                  .Site_ReturnUrl;
 
-        public string ProcessAsanPardakhtPayment(string onlineId )
+        public string ProcessAsanPardakhtPayment(string onlineId)
         {
             if (string.IsNullOrEmpty(onlineId)) return SiteErrorResponse.NullOrEmptyOnlineId;
 
-             SelectPaymentDetailResult paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+            SelectPaymentDetailResult paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
             if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
 
@@ -504,10 +498,6 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
         private int ConvertToInt(string value) => Convert.ToInt32(value);
 
-        private string FreePayment(string onlineId)
-           => repository
-               .UpdateOnlinePayment(new UpdateOnlinePayParameter("", ConvertToInt(onlineId), "Free", "Free", -1, ""))
-               .Site_ReturnUrl;
         #endregion
     }
 }

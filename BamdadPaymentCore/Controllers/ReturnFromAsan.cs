@@ -5,11 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BamdadPaymentCore.Controllers
 {
-    public class ReturnFromAsan(IReturnFromBankService returnFromBankService) : Controller
+    public class ReturnFromAsan(IAsanRestService asanRestService) : Controller
     {
         public IActionResult Index()
         {
-            string result = returnFromBankService.ReturnFromAsan(Request) + "?OnlineID=" + Request.Query["invoiceid"];
+            string result = asanRestService.ProcessCallBackFromBank(Request) + "?OnlineID=" + Request.Query["invoiceid"];
 
             if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {

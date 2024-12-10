@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BamdadPaymentCore.Controllers
 {
-    public class ReturnedFromMellat(IReturnFromBankService service) : Controller
+    public class ReturnedFromMellat(IMellatService mellatService) : Controller
     {
         public IActionResult Index()
         {
-            string result = service.ReturnFromMellat(Request);
+            string result = mellatService.ProcessCallBackFromBank(Request);
 
             if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
