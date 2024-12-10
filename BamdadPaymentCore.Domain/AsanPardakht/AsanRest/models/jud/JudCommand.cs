@@ -1,4 +1,4 @@
-﻿using RestService;
+﻿using BamdadPaymentCore.Domain.AsanPardakht.AsanRest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +6,7 @@ using System.Web;
 
 
 
-    public class JudCommand : ITokenCommand
+public class JudCommand : ITokenCommand
     {
         public JudCommand(
             int merchantConfigurationId,

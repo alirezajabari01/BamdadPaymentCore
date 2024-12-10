@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RestService.models
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models
 {
     public interface IResponseVm
     {

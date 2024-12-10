@@ -1,6 +1,5 @@
 ﻿using BamdadPaymentCore.Domain.Entites;
-using BamdadPaymentCore.Domain.StoreProceduresModels;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.EntityFrameworkCore;
 using System.Data.Entity.Infrastructure;
 

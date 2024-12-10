@@ -1,22 +1,18 @@
-﻿using BamdadPaymentCore.Domain.Common;
+﻿using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
+using BamdadPaymentCore.Domain.Common;
 using BamdadPaymentCore.Domain.Entites;
 using BamdadPaymentCore.Domain.Exceptions;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.SoapDto.Requests;
-using BamdadPaymentCore.Domain.StoreProceduresModels;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.Models.SoapDto.Requests;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+
 using bpm.shaparak.ir;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
-using Nobisoft.Core.Extensions;
-using RestService;
-using RestService.models.bill;
-using RestService.models.reverse;
-using RestService.models.settle;
-using RestService.models.verify;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -34,8 +30,8 @@ namespace BamdadPaymentCore.Domain.Services
     public class PaymentService(
         IBamdadPaymentRepository repository,
         IHttpContextAccessor httpContextAccessor,
-        IPaymentGateway mellatGateway,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting,IAsanRestService asanRestService) : IPaymentService
+        IOptions<PaymentGatewaySetting> paymentGatewaySetting,
+        IAsanRestService asanRestService) : IPaymentService
     {
         #region PrivateFields
 
@@ -56,9 +52,6 @@ namespace BamdadPaymentCore.Domain.Services
 
         public bool ReqRefund(ReqRefundRequest request)
             => Authenticate(request.Username, request.Password) is not null ? asanRestService.Cancel(request.OnlineId) : false;
-
-        //public bool ReqReversal(ReqReversalRequest request)
-        //    => Authenticate(request.Username, request.Password) is not null ?as. ReversalRequest(request.OnlineId) : false;
 
         public DataTable ReqSettleOnline(ReqSettleOnlineRequest request)
         {

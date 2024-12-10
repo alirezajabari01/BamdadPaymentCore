@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace RestService
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.validator
 {
     public class NumberValidator
     {

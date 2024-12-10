@@ -1,11 +1,10 @@
-﻿
-using System.Text;
+﻿using System.Text;
 
-namespace PGTesterApp.Business
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanBusiness
 {
     public class RedirectWithPost
     {
-        
+
         public static string PreparePostForm(string url, Dictionary<string, string> data)
         {
             var formBuilder = new StringBuilder();

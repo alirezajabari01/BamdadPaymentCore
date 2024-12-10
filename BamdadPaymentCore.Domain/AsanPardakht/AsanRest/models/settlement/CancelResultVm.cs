@@ -1,4 +1,4 @@
-﻿namespace RestService.models.settle
+﻿namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement
 {
     public class CancelResultVm : IResponseVm
     {

@@ -1,4 +1,4 @@
-﻿namespace RestService.models.reverse
+﻿namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse
 {
     public class CancelCommand
     {

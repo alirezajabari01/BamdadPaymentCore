@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace RestService.models.settle
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement
 {
     public class SettleVm : IResponseVm
     {

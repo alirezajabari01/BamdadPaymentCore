@@ -1,13 +1,6 @@
-﻿using BamdadPaymentCore.Domain.Entites;
-using BamdadPaymentCore.Domain.StoreProceduresModels;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+
 
 namespace BamdadPaymentCore.Domain.IRepositories
 {

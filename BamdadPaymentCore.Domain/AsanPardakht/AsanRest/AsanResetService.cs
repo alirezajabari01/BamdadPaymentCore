@@ -1,10 +1,4 @@
 ﻿using Newtonsoft.Json;
-using RestService.models;
-using RestService.models.bill;
-using RestService.models.reverse;
-using RestService.models.settle;
-using RestService.models.verify;
-using RestService;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -17,17 +11,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
 using Microsoft.AspNetCore.Http;
 using BamdadPaymentCore.Domain.Services;
 using BamdadPaymentCore.Domain.IRepositories;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Common;
 using Microsoft.Extensions.Options;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models;
-using PGTesterApp.Business;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.verify;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 
-namespace RestService
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
     public class AsanResetService(IBamdadPaymentRepository repository, IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
     {
@@ -102,7 +99,7 @@ namespace RestService
 
             try
             {
-                var responseMessage = (client.PostAsync($"v1/Verify", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult());
+                var responseMessage = client.PostAsync($"v1/Verify", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult();
                 switch ((int)responseMessage.StatusCode)
                 {
                     case 200:
@@ -155,7 +152,7 @@ namespace RestService
 
             try
             {
-                var responseMessage = (client.PostAsync($"v1/Settlement", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult());
+                var responseMessage = client.PostAsync($"v1/Settlement", content, new CancellationTokenSource(TimeSpan.FromSeconds(20)).Token).GetAwaiter().GetResult();
                 switch ((int)responseMessage.StatusCode)
                 {
                     case 200:
@@ -332,7 +329,7 @@ namespace RestService
             }
         }
 
-        public string Return(HttpRequest Request)
+        public string ProcessCallBackFromBank(HttpRequest Request)
           => string.IsNullOrEmpty(Request.Form["PaygateTranId"])
           ? CancelPayment(Request.Query["invoiceid"])
           : ProcessAsanPardakhtPayment(Request.Query["invoiceid"]);
@@ -453,18 +450,17 @@ namespace RestService
                      "cancel", "Failed", -1, "use cancel payment"))
                  .Site_ReturnUrl;
 
-        public string ProcessAsanPardakhtPayment(string onlineId)
+        public string ProcessAsanPardakhtPayment(string onlineId , SelectPaymentDetailResult paymentDetail)
         {
-            string localInvoiceId = onlineId;
+            
 
-            if (string.IsNullOrEmpty(localInvoiceId)) return SiteErrorResponse.NullOrEmptyOnlineId;
+            if (string.IsNullOrEmpty(onlineId)) return SiteErrorResponse.NullOrEmptyOnlineId;
 
-            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(localInvoiceId));
 
             if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
 
             //Free Payment
-            if (paymentDetail.Online_Price == 0) return FreePayment(localInvoiceId);
+            if (paymentDetail.Online_Price == 0) return FreePayment(onlineId);
 
             var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
 

@@ -1,9 +1,9 @@
 ﻿using BamdadPaymentCore.Domain.Database;
 using BamdadPaymentCore.Domain.Entites;
 using BamdadPaymentCore.Domain.IRepositories;
-using BamdadPaymentCore.Domain.StoreProceduresModels;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;

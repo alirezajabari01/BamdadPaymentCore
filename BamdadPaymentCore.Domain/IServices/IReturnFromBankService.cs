@@ -9,6 +9,8 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IReturnFromBankService
     {
-        string ReturnUrlRedirectionFromBank(HttpRequest Request);
+        string ReturnFromAsan(HttpRequest Request);
+        
+        string ReturnFromMellat(HttpRequest Request);
     }
 }

@@ -1,20 +1,14 @@
 ﻿using BamdadPaymentCore.Domain.Common;
-using BamdadPaymentCore.Domain.ControllerDto;
 using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.Models.ControllerDto;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+
 using bpm.shaparak.ir;
 using Microsoft.Extensions.Options;
-using PGTesterApp.Business;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BamdadPaymentCore.Domain.Services
 {
@@ -74,8 +68,7 @@ namespace BamdadPaymentCore.Domain.Services
         #region PrivateMethods
 
         private string PayNormalMelat(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
-        {
-            var t = mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
+        => mellatPaymentGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(
                 long.Parse(paymentDetail.Bank_MerchantID.ToString())
                 , paymentDetail.Bank_User
                 , paymentDetail.Bank_Pass
@@ -84,7 +77,7 @@ namespace BamdadPaymentCore.Domain.Services
                 , date
                 , time
                 , "0"
-                , paymentDetail.IsSettle == 1 ? ReturnBankWithAccept : ReturnBank
+                , ReturnBank
                 , "0"
                 , ""
                 , ""
@@ -92,12 +85,10 @@ namespace BamdadPaymentCore.Domain.Services
                 , ""
                 , null
                 ))).Body.@return;
-            return t;
-        }
+
 
         private string PayWithKind(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBankWithAccept, string ReturnBank)
-        {
-            return mellatPaymentGateway.bpDynamicPayRequest(new bpDynamicPayRequest(new bpDynamicPayRequestBody(
+        => mellatPaymentGateway.bpDynamicPayRequest(new bpDynamicPayRequest(new bpDynamicPayRequestBody(
                 long.Parse(paymentDetail.Bank_MerchantID.ToString())
                 , paymentDetail.Bank_User.ToString()
                 , paymentDetail.Bank_Pass.ToString()
@@ -106,7 +97,7 @@ namespace BamdadPaymentCore.Domain.Services
                 , date
                 , time
                 , "0"
-                , paymentDetail.IsSettle == 1 ? ReturnBankWithAccept : ReturnBank
+                , ReturnBank
                 , "0"
                 , long.Parse(paymentDetail.Online_Kind.ToString())
                 , ""
@@ -114,7 +105,7 @@ namespace BamdadPaymentCore.Domain.Services
                 , ""
                 , ""
                 , null))).Body.@return;
-        }
+
 
         #endregion
     }

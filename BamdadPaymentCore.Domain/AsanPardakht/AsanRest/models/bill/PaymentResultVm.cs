@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace RestService.models.bill
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill
 {
     public class PaymentResultVm : IResponseVm
     {

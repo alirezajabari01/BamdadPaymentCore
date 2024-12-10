@@ -1,12 +1,11 @@
-﻿using RestService;
-using RestService;
+﻿using BamdadPaymentCore.Domain.AsanPardakht.AsanRest;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 
 
-    public class SaleCommand : ITokenCommand
+public class SaleCommand : ITokenCommand
     {
         public SaleCommand(int merchantConfigurationId, int serviceTypeId, long orderId,
             ulong amountInRials, string callbackURL, string additionalData)

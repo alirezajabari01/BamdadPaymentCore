@@ -1,6 +1,4 @@
 ﻿using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.SoapDto.Requests;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
 using SoapCore.ServiceModel;
 using System;
 using System.Collections.Generic;
@@ -13,6 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using SoapCore;
 using System.ServiceModel;
+using BamdadPaymentCore.Domain.Models.SoapDto.Requests;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 
 
 namespace BamdadPaymentCore.SOAP

@@ -1,17 +1,10 @@
-﻿using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
-using RestService.models;
-using RestService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using Microsoft.AspNetCore.Http;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models;
-using RestService.models.settle;
-using BamdadPaymentCore.Domain.Common;
-using BamdadPaymentCore.Domain.Services;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
+
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
 
 namespace BamdadPaymentCore.Domain.IServices
 {
@@ -22,7 +15,7 @@ namespace BamdadPaymentCore.Domain.IServices
 
         AsanTransactionResult GetTransationResultFromAsanPardakht(string onlineId, SelectPaymentDetailResult paymentDetail);
 
-        public string Return(HttpRequest Request);
+        public string ProcessCallBackFromBank(HttpRequest Request);
 
         SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId);
 

@@ -1,4 +1,4 @@
-﻿using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+﻿using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;

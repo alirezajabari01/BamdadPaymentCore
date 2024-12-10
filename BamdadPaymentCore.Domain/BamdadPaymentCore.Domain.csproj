@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="SoapDto\Responses\" />
+    <Folder Include="Models\SoapDto\Responses\" />
   </ItemGroup>
 
   <ItemGroup>

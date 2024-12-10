@@ -1,4 +1,4 @@
-﻿using BamdadPaymentCore.Domain.StoreProceduresModels;
+﻿using BamdadPaymentCore.Domain.Models.StoreProceduresModels;
 using System.Data;
 using System.Reflection;
 

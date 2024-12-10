@@ -1,12 +1,6 @@
-﻿using BamdadPaymentCore.Domain.Common;
-using BamdadPaymentCore.Domain.Entites;
-using BamdadPaymentCore.Domain.IServices;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
+﻿using BamdadPaymentCore.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.JSInterop;
-using PGTesterApp.Business;
-using System.Collections.Specialized;
-using System.Data;
 
 namespace BamdadPaymentCore.Controllers
 {

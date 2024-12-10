@@ -1,12 +1,8 @@
-﻿using BamdadPaymentCore.Domain.SoapDto.Requests;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Parameters;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
-using System;
-using System.Collections.Generic;
+﻿using BamdadPaymentCore.Domain.Models.SoapDto.Requests;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BamdadPaymentCore.Domain.IServices
 {
@@ -27,8 +23,6 @@ namespace BamdadPaymentCore.Domain.IServices
         DataTable GetOnlineStatus(GetOnlineStatusParameter request);
 
         bool ReqRefund(ReqRefundRequest request);
-
-       // bool ReqReversal(ReqReversalRequest request);
 
         DataTable ReqSettleOnline(ReqSettleOnlineRequest request);
 

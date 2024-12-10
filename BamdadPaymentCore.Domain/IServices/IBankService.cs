@@ -1,10 +1,7 @@
-﻿using RestService.models;
-using RestService;
-using RestService.models.verify;
-using RestService.models.settle;
-using RestService.models.reverse;
-using RestService.models.bill;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+﻿using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.verify;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
 
 namespace BamdadPaymentCore.Domain.IServices
 {

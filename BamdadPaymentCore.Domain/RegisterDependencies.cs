@@ -1,4 +1,5 @@
 ﻿using Autofac.Core;
+using BamdadPaymentCore.Domain.AsanPardakht.AsanRest;
 using BamdadPaymentCore.Domain.Common;
 using BamdadPaymentCore.Domain.Database;
 using BamdadPaymentCore.Domain.IRepositories;
@@ -9,7 +10,6 @@ using bpm.shaparak.ir;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RestService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +33,8 @@ namespace BamdadPaymentCore.Domain
             services.AddScoped<IBamdadPaymentRepository, BamdadPaymentRepository>();
 
             services.AddScoped<IPaymentGateway, PaymentGatewayClient>();
+
+            services.AddScoped<IMellatService, MellatService>();
 
             services.AddScoped<ISendToBankService, SendToBankService>();
 

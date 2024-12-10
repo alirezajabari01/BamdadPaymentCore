@@ -1,5 +1,5 @@
-﻿using BamdadPaymentCore.Domain.ControllerDto;
-using BamdadPaymentCore.Domain.StoreProceduresModels.Response;
+﻿using BamdadPaymentCore.Domain.Models.ControllerDto;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using System;
 using System.Collections.Generic;
 using System.Linq;

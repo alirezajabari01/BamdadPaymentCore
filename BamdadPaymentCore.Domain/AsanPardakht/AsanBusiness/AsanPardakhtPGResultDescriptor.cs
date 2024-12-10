@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace PGTesterApp.Business
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanBusiness
 {
     public class AsanPardakhtPGResultDescriptor
     {
@@ -59,7 +59,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.amount;
+                return amount;
             }
         }
 
@@ -67,7 +67,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.preInvoiceID;
+                return preInvoiceID;
             }
         }
 
@@ -75,7 +75,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.token;
+                return token;
             }
         }
 
@@ -83,7 +83,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.resCode;
+                return resCode;
             }
         }
 
@@ -91,7 +91,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.messageText;
+                return messageText;
             }
         }
 
@@ -99,7 +99,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.payGateTranID;
+                return payGateTranID;
             }
         }
 
@@ -107,7 +107,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.rrn;
+                return rrn;
             }
         }
 
@@ -115,7 +115,7 @@ namespace PGTesterApp.Business
         {
             get
             {
-                return this.lastFourDigitOfPAN;
+                return lastFourDigitOfPAN;
             }
         }
 

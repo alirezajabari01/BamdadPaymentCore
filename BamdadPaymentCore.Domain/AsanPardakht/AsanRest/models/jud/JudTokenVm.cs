@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace RestService.models.jud
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.jud
 {
     public class JudTokenVm : ITokenVm
     {

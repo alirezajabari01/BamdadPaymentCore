@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 
-namespace RestService.models.bill
+namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill
 {
     public class BillCommand : SaleCommand
     {
@@ -13,8 +13,8 @@ namespace RestService.models.bill
             , string billId, string payId)
             : base(merchantConfigurationId, serviceTypeId, orderId, amountInRials, callbackURL, JsonConvert.SerializeObject(new
             {
-                billId = billId,
-                payId = payId
+                billId,
+                payId
             }))
         {
         }
