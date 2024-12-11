@@ -1,8 +1,5 @@
-﻿
-
-@if (ViewBag.RefId == "")
+﻿@if (string.IsNullOrEmpty(ViewBag.RefId))
 {
-
     <!DOCTYPE html> 
     <html lang="en"> 
     <head> 
@@ -81,6 +78,7 @@
     <body onload='document.forms["redirectForm"].submit()'>
         <form name='redirectForm' method='post' action='@ViewBag.GatewayUrl'>
             <input type='hidden' name='RefId' value='@ViewBag.RefId' />
+            <input id="MobileNo" type='hidden' name='MobileNo' value='@ViewBag.MobileNo'  />
         </form>
     </body>
     </html>

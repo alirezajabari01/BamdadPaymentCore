@@ -15,8 +15,6 @@ namespace BamdadPaymentCore.Domain.IServices
 
         AsanTransactionResult GetTransationResultFromAsanPardakht(string onlineId, SelectPaymentDetailResult paymentDetail);
 
-        public string ProcessCallBackFromBank(HttpRequest Request);
-
         SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId);
 
         string ProcessAsanPardakhtPayment(string onlineId);

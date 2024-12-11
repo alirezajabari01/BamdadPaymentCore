@@ -28,7 +28,7 @@ namespace BamdadPaymentCore.Middlewares
                     bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
                 }
 
-                await context.Response.WriteAsync(ex.Message);
+                context.Response.Redirect("/Error");
             }
         }
     }

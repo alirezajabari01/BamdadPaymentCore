@@ -2,6 +2,8 @@ using BamdadPaymentCore.Domain.Common;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.Models.ServicesModels;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +18,9 @@ namespace BamdadPaymentCore.Controllers
     {
         public IActionResult Index()
         {
-           var e = mellatService.SettleTransaction(new MellatRequest(4959335, "nimkat1398", "47637143", 241461, 241461, 292875991676));
+            SelectPaymentDetailResult paymentDetail = bamdadPaymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter("3513131"));
+            // string card = "72B33C99E800FCCC677F1FC6AE13AAD11476A1E4E1565CF759";
+            //var e = mellatService.SettleTransaction(new MellatRequest(4959335, "nimkat1398", "47637143", 241461, 241461, 292875991676));
             //var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mft", "241437", "534"));
             // var t =paymentService.ReqSettleOnline(new ReqSettleOnlineRequest("asan", "mft", 241419.ToString()));
             //var updateResult = bamdadPaymentRepository.UpdateOnlinePayment(new UpdateOnlinePayParameter("060241209938",

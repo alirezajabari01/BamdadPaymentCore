@@ -28,15 +28,15 @@ namespace BamdadPaymentCore.Domain.Services
         public string ProcessCallBackFromBank(HttpRequest Request)
         {
             string saleOrderId = Request.Form["SaleOrderId"];
-
-            if (string.IsNullOrEmpty(Request.Form["SaleReferenceId"])) return CancelPayment(saleOrderId);
-
-            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(saleOrderId));
-
             string refId = Request.Form["RefId"];
             string saleReferenceId = Request.Form["SaleReferenceId"];
             string resCode = Request.Form["ResCode"];
-            string cardHolderInfo = Request.Form["CardHolderInfo"];
+            string cardHolderInfo = Request.Form["CardHolderPan"];
+
+            if (resCode == "17") return CancelPayment(saleOrderId);
+
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(saleOrderId));
+
             string referenceNumber = null;
             string settleResult = "0";
             string verifyResult = "0";
@@ -76,7 +76,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             settleResult = SettleTransaction(mellatRequest);
 
-            if (settleResult != "0" || settleResult != "45") return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
+            if (settleResult != "0" && settleResult != "45") return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
 
 
             repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Convert.ToInt32(saleOrderId)));
