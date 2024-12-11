@@ -19,6 +19,19 @@ namespace BamdadPaymentCore.Middlewares
             {
                 await _next(context);
             }
+            catch (AppException ex)
+            {
+                var bamdadPaymentRepository = context.RequestServices.GetService<IBamdadPaymentRepository>();
+
+                if (bamdadPaymentRepository != null)
+                {
+                    bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+                }
+
+                context.Response.StatusCode = (int)ex.HttpStatusCode;
+                await context.Response.WriteAsync(ex.Message);
+
+            }
             catch (Exception ex)
             {
                 var bamdadPaymentRepository = context.RequestServices.GetService<IBamdadPaymentRepository>();
@@ -27,7 +40,7 @@ namespace BamdadPaymentCore.Middlewares
                 {
                     bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
                 }
-                context.Response.WriteAsync(ex.Message);
+                await context.Response.WriteAsync(ex.Message);
             }
         }
     }
