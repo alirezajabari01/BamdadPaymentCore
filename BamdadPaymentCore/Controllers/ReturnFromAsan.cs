@@ -21,8 +21,7 @@ namespace BamdadPaymentCore.Controllers
                 return Redirect(result);
             }
 
-            ViewBag.Message = result;
-            return View();
+            throw new AppException(result);
         }
     }
 }

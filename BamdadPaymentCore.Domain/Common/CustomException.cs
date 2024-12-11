@@ -38,4 +38,8 @@ namespace BamdadPaymentCore.Domain.Common
         public CancelTransationException() : base(" Cancel Transation Failed ", HttpStatusCode.InternalServerError) { }
     }
 
+    public class OnlineIdNotFoundException : AppException
+    {
+        public OnlineIdNotFoundException() : base(" OnlineId NotFound ", HttpStatusCode.NotFound) { }
+    }
 }

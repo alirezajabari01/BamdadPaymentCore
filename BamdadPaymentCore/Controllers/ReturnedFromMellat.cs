@@ -1,4 +1,5 @@
-﻿using BamdadPaymentCore.Domain.IServices;
+﻿using BamdadPaymentCore.Domain.Exceptions;
+using BamdadPaymentCore.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BamdadPaymentCore.Controllers
@@ -14,8 +15,7 @@ namespace BamdadPaymentCore.Controllers
                 return Redirect(result);
             }
 
-            ViewBag.Message = result;
-            return View();
+            throw new AppException(result);
         }
     }
 }
