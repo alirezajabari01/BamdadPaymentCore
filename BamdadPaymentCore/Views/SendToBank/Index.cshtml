@@ -4,7 +4,10 @@
 <body onload='document.forms["redirectForm"].submit()'>
     <form name='redirectForm' method='post' action='@ViewBag.GatewayUrl'>
         <input type='hidden' name='RefId' value='@ViewBag.RefId' />
-        <input id="MobileNo" type='hidden' name='MobileNo' value='@ViewBag.MobileNo' />
+        @if (ViewBag.GatewayUrl == "https://bpm.shaparak.ir/pgwchannel/startpay.mellat")
+        {
+            <input type='hidden' id="MobileNo" name='MobileNo' value='@ViewBag.MobileNo' />
+        }
     </form>
 </body>
 </html>
