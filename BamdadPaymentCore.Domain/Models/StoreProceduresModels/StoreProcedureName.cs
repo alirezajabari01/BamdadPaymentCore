@@ -8,7 +8,7 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
 {
     public class StoreProcedureName
     {
-        public const string InsertOnlinePay = "dbo.Sp_InsertOnlinePayment";
+        public const string InsertOnlinePayment = "dbo.Sp_InsertOnlinePayment";
 
         public const string SelectBankId = "dbo.Sp_SelectBnakID";
 

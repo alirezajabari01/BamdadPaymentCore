@@ -12,16 +12,16 @@ namespace BamdadPaymentCore.SOAP
     public interface IPaymentSoapService
     {
         [OperationContract]
-        public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind);
+        public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind, string? mobleNomber = null);
 
         [OperationContract]
-        public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind);
+        public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind, string? mobleNomber = null);
 
         [OperationContract]
-        public string GetOnlineId(string username, string pass, string price, string desc, string reqId);
+        public string GetOnlineId(string username, string pass, string price, string desc, string reqId, string? mobleNomber = null);
 
         [OperationContract]
-        public string normal(string username, string pass, string price, string desc, string reqId);
+        public string normal(string username, string pass, string price, string desc, string reqId, string? mobleNomber = null);
 
         [OperationContract]
         public DataTable GetOnlineStatus(string username, string pass, string onlineId);

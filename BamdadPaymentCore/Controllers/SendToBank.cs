@@ -30,7 +30,7 @@ namespace BamdadPaymentCore.Controllers
 
             SelectPaymentDetailResult paymentDetail = paymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
 
-            ViewBag.MobileNo = paymentDetail.User_mobile ?? "";
+            ViewBag.MobileNo = paymentDetail.MobileNomber ?? "";
 
             if (paymentDetail is null || paymentDetail.Online_Status == true)
             {

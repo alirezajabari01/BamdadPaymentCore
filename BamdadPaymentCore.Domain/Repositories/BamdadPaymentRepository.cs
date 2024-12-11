@@ -15,34 +15,36 @@ namespace BamdadPaymentCore.Domain.Repositories
     {
         public InsertIntoOnlinePayResult InsertOnlinePay(InsertIntoOnlinePayParameter parameter)
         {
-            var bankIdParam = new SqlParameter("@Bank_ID", SqlDbType.Int)
+            var bankId = new SqlParameter("@Bank_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Bank_ID };
 
-            var siteIdParam = new SqlParameter("@Site_ID", SqlDbType.Int)
+            var siteId = new SqlParameter("@Site_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Site_ID };
 
-            var priceParam = new SqlParameter("@Online_Price", SqlDbType.Int)
+            var price = new SqlParameter("@Online_Price", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Price };
 
-            var descParam = new SqlParameter("@Online_Desc", SqlDbType.VarChar)
+            var desc = new SqlParameter("@Online_Desc", SqlDbType.VarChar)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Desc };
 
-            var reqIdParam = new SqlParameter("@Online_ReqID", SqlDbType.Int)
+            var reqId = new SqlParameter("@Online_ReqID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ReqID };
 
-            var kindParam = new SqlParameter("@Online_Kind", SqlDbType.Int)
+            var kind = new SqlParameter("@Online_Kind", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Kind };
 
-            var autoSettleParam = new SqlParameter("@AutoSettle", SqlDbType.Bit)
+            var autosettle = new SqlParameter("@AutoSettle", SqlDbType.Bit)
             { Direction = ParameterDirection.Input, Value = parameter.AutoSettle };
 
-            var typeParam = new SqlParameter("@Online_Type", SqlDbType.VarChar)
+            var type = new SqlParameter("@Online_Type", SqlDbType.VarChar)
             { Direction = ParameterDirection.Input, Value = parameter.Online_Type };
 
-            return context.Database
-                .SqlQuery<InsertIntoOnlinePayResult>(
-                    $"EXEC {StoreProcedureName.InsertOnlinePay} {bankIdParam}, {siteIdParam}, {priceParam}, {descParam}, {reqIdParam}, {kindParam}, {autoSettleParam}, {typeParam}")
-                .ToList().FirstOrDefault();
+            var mobileNomber = new SqlParameter("@MobileNomber", SqlDbType.VarChar)
+            { Direction = ParameterDirection.Input, Value = parameter.MobileNomber ?? (object)DBNull.Value };
+
+            return context.Database.SqlQuery<InsertIntoOnlinePayResult>(
+                    $"EXEC {StoreProcedureName.InsertOnlinePayment} {bankId}, {siteId}, {price}, {desc}, {reqId}, {kind}, {autosettle}, {type}, {mobileNomber}")
+                .ToList().FirstOrDefault()!;
         }
 
         public List<SelectBankDetailResult> SelectBankDetail(SelectBankDetailParameter parameter)

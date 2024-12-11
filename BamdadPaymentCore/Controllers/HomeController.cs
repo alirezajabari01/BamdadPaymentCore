@@ -18,7 +18,7 @@ namespace BamdadPaymentCore.Controllers
     {
         public IActionResult Index()
         {
-            SelectPaymentDetailResult paymentDetail = bamdadPaymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter("3513131"));
+            //SelectPaymentDetailResult paymentDetail = bamdadPaymentRepository.SelectPaymentDetail(new SelectPaymentDetailParameter("3513131"));
             // string card = "72B33C99E800FCCC677F1FC6AE13AAD11476A1E4E1565CF759";
             //var e = mellatService.SettleTransaction(new MellatRequest(4959335, "nimkat1398", "47637143", 241461, 241461, 292875991676));
             //var t = paymentService.ReqRefund(new ReqRefundRequest("asan", "mft", "241437", "534"));
@@ -43,7 +43,7 @@ namespace BamdadPaymentCore.Controllers
 
             //var t = new AsanPardakhtProvider("","as",);
             //var t = paymentService.UpdateOnlinePayFailed("241241", "cancel", "", "-1", "use cancel payment");
-            //var t = paymentService.GetOnlineIdWithSettle(new GetOnlineIdWithSettleRequest("asan", "mft", "100000", "sdf", "45","0"));
+            var t = paymentService.GetOnlineIdDifferentTypes("asan", "mft", "100000", "sdf", "45", "0", mobleNomber: "09039423499");
             //var t = paymentService.GetOnlineIdDifferentTypes("asan", "mft", "100000", "sdf", "45","0",true);
             //var t = paymentService.GetOnlineStatus(new GetOnlineStatusParameter("asan", "mft", "240914"));
             //var t = paymentService.ReqReversal(new Domain.SoapDto.Requests.ReqReversalRequest("asan", "mfyt", "508888888"));

@@ -13,6 +13,6 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response
         public int IsSettle { get; set; }
         public bool Online_Status { get; set; }
         public bool AutoSettle { get; set; }
-        public string? User_mobile { get; set; }
+        public string? MobileNomber { get; set; }
     }
 }

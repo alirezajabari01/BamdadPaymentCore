@@ -8,7 +8,7 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IPaymentService
     {
-        string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice, string desc, string reqId, string kind, bool autoSettle = false, string onlineType = "payment");
+        string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice, string desc, string reqId, string kind, bool autoSettle = false, string onlineType = "payment", string mobleNomber = "");
 
         bool RequestReversal(string username, string pass, string onlineId);
 

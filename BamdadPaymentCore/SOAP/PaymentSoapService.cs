@@ -21,12 +21,12 @@ namespace BamdadPaymentCore.SOAP
     public class PaymentSoapService(IPaymentService paymentService) : IPaymentSoapService
     {
 
-        public string GetOnlineId(string username, string pass, string price, string desc, string reqId)
+        public string GetOnlineId(string username, string pass, string price, string desc, string reqId, string? mobleNomber = null)
         {
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, "0");
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, "0", mobleNomber: mobleNomber);
             }
             catch (Exception ex)
             {
@@ -36,12 +36,12 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-        public string normal(string username, string pass, string price, string desc, string reqId)
+        public string normal(string username, string pass, string price, string desc, string reqId, string? mobleNomber = null)
         {
             string result = string.Empty;
             try
             {
-                result = GetOnlineIdWithSettle(username, pass, price, desc, reqId,"0");
+                result = GetOnlineIdWithSettle(username, pass, price, desc, reqId, "0", mobleNomber: mobleNomber);
             }
             catch (Exception ex)
             {
@@ -51,12 +51,12 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-        public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind)
+        public string GetOnlineIdkind(string username, string pass, string price, string desc, string reqId, string kind, string? mobleNomber = null)
         {
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, mobleNomber: mobleNomber);
             }
             catch (Exception ex)
             {
@@ -66,12 +66,12 @@ namespace BamdadPaymentCore.SOAP
             return result;
         }
 
-        public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind)
+        public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind, string? mobleNomber = null)
         {
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, true);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, true, mobleNomber: mobleNomber);
             }
             catch (Exception ex)
             {
