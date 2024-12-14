@@ -25,7 +25,7 @@ namespace BamdadPaymentCore.Middlewares
 
                 if (bamdadPaymentRepository != null)
                 {
-                    bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
+                    bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.AdditionalData.ToString()));
                 }
 
                 context.Response.StatusCode = (int)ex.HttpStatusCode;

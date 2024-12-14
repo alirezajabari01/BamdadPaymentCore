@@ -13,6 +13,8 @@ using SoapCore;
 using System.ServiceModel;
 using BamdadPaymentCore.Domain.Models.SoapDto.Requests;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using XAct.Users;
+using BamdadPaymentCore.Domain.Common;
 
 
 namespace BamdadPaymentCore.SOAP
@@ -26,7 +28,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, "0", mobleNomber: mobleNomber);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, Kind.NormalKind, false, OnlineType.Payment, mobleNomber);
             }
             catch (Exception ex)
             {
@@ -41,7 +43,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = GetOnlineIdWithSettle(username, pass, price, desc, reqId, "0", mobleNomber: mobleNomber);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, Kind.NormalKind, true, OnlineType.Payment, mobleNomber);
             }
             catch (Exception ex)
             {
@@ -56,7 +58,7 @@ namespace BamdadPaymentCore.SOAP
             string result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, mobleNomber: mobleNomber);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, false, OnlineType.Payment, mobleNomber);
             }
             catch (Exception ex)
             {
