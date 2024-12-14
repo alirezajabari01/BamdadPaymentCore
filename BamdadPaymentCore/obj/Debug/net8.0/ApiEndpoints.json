@@ -2,7 +2,7 @@
   {
     "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
     "Method": "GetOnlineId",
-    "RelativePath": "api/GetOnlineId",
+    "RelativePath": "api/Payment/GetOnlineId",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -28,7 +28,7 @@
   {
     "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
     "Method": "OnlineStatus",
-    "RelativePath": "api/OnlineStatus",
+    "RelativePath": "api/Payment/OnlineStatus",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -64,7 +64,7 @@
   {
     "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
     "Method": "SettleAsanPardakht",
-    "RelativePath": "api/SettleAsanPardakht",
+    "RelativePath": "api/Payment/SettleAsanPardakht",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -90,7 +90,7 @@
   {
     "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
     "Method": "SettleMellat",
-    "RelativePath": "api/SettleMellat",
+    "RelativePath": "api/Payment/SettleMellat",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,

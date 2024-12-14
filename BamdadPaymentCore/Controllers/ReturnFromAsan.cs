@@ -18,7 +18,7 @@ namespace BamdadPaymentCore.Controllers
 
             if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                return Redirect(result);
+                return Redirect(result+ queryString);
             }
 
             throw new AppException(result);

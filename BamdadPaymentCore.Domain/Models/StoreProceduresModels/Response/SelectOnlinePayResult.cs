@@ -9,7 +9,7 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response
         public int Price { get; set; }
         public string OnlineDate { get; set; }
         public bool Status { get; set; }
-        public int IsSettle { get; set; }
-        public string OrderNo { get; set; }
+        public int? IsSettle { get; set; }
+        public string? OrderNo { get; set; }
     }
 }

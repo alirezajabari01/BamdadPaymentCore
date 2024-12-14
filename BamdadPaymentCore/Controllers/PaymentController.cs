@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BamdadPaymentCore.Controllers
 {
     [ApiController]
-    [Route("api/[action]")]
+    [Route("api/[controller]/[action]")]
     public class PaymentController(IPaymentService paymentService) : ControllerBase
     {
         [HttpPost]
@@ -20,6 +20,6 @@ namespace BamdadPaymentCore.Controllers
         public ApiResult<SelectOnlinePayResult> SettleMellat(ReqSettleOnlineRequest request) => paymentService.SettleAsan(request);
 
         [HttpGet]
-        public ApiResult<SelectOnlinePayResult> OnlineStatus([FromQuery] GetOnlineStatusParameter request) => paymentService.OnlineStatus(request);
+        public ApiResult<SelectOnlinePayResult> GetOnlineStatus([FromQuery] GetOnlineStatusParameter request) => paymentService.OnlineStatus(request);
     }
 }
