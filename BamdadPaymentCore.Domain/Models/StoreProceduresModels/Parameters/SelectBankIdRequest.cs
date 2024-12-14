@@ -2,6 +2,6 @@
 
 namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters
 {
-    public record SelectBankIdParameter(int Site_ID) : StoreProcedureRequestModel;
+    public record SelectBankIdParameter(int? Site_ID) : StoreProcedureRequestModel;
 
 }

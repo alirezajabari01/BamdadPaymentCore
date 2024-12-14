@@ -2,7 +2,7 @@
 
 namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response
 {
-    public class SelectOnlinePayResult : StoreProcedureResponseModel
+    public class SelectOnlinePayResult 
     {
         public int Online_ID { get; set; }
         public string Bank_Name { get; set; }
@@ -10,7 +10,6 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response
         public string OnlineDate { get; set; }
         public bool Status { get; set; }
         public int IsSettle { get; set; }
-
-
+        public string OrderNo { get; set; }
     }
 }

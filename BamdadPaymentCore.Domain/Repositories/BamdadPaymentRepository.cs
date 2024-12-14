@@ -67,24 +67,26 @@ namespace BamdadPaymentCore.Domain.Repositories
                 .ToList().FirstOrDefault();
         }
 
-        public List<SelectOnlinePayResult> SelectOnlinePay(SelectOnlinePayParameter parameter)
+        public SelectOnlinePayResult SelectOnlinePay(SelectOnlinePayParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
-
             return context.Database
                 .SqlQuery<SelectOnlinePayResult>($"EXEC  {StoreProcedureName.SelectOnlinePay}  {siteIdParam}")
-                .ToList();
+                .ToList().First();
         }
 
         public List<SelectOnlinePayDetailResult> SelectOnlinePayDetail(SelectOnlinePayDetailParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
-
+            int ccc = Convert.ToInt32(parameter.Online_ID);
+            context.Database
+               .SqlQuery<SelectOnlinePayDetailResult>(
+                   $"EXEC dbo.Sp_SelectAllFromOnlinePay @Online_ID = 241518").ToList();
             return context.Database
                 .SqlQuery<SelectOnlinePayDetailResult>(
-                    $"EXEC {StoreProcedureName.SelectOnlinePayDetail}  {siteIdParam}").ToList();
+                    $"EXEC dbo.Sp_SelectOnlinePayDetail @Online_ID = {ccc}").ToList();
         }
 
         public SiteAuthenticationResult SelectSiteAuthentication(SiteAuthenticationParameter parameter)

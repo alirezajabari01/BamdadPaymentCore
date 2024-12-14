@@ -6,28 +6,30 @@ namespace BamdadPaymentCore.Domain.Common
 {
     public static class StoreProcedureResponseMapper
     {
-        public static DataTable ListToDataTable<T>(this List<T> items) where T : StoreProcedureResponseModel
+        public static DataTable ToDataTable<T>(this T item) where T : class
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item), "The input item cannot be null.");
+
             var dataTable = new DataTable();
 
-            if (items == null || !items.Any()) return dataTable;
-
+            // Get the properties of the class
             var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
+            // Add columns to the DataTable
             foreach (var prop in properties)
             {
-                dataTable.Columns.Add(prop.Name, Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType);
+                var columnType = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+                dataTable.Columns.Add(prop.Name, columnType);
             }
 
-            foreach (var item in items)
+            // Add a single row to the DataTable
+            var row = dataTable.NewRow();
+            foreach (var prop in properties)
             {
-                var row = dataTable.NewRow();
-                foreach (var prop in properties)
-                {
-                    row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
-                }
-                dataTable.Rows.Add(row);
+                row[prop.Name] = prop.GetValue(item) ?? DBNull.Value;
             }
+            dataTable.Rows.Add(row);
 
             return dataTable;
         }

@@ -1,19 +1,7 @@
 ﻿using BamdadPaymentCore.Domain.IServices;
-using SoapCore.ServiceModel;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.ServiceModel.Channels;
-using System.ServiceModel.Description;
-using System.ServiceModel.Dispatcher;
-using System.Text;
-using System.Threading.Tasks;
-using SoapCore;
-using System.ServiceModel;
 using BamdadPaymentCore.Domain.Models.SoapDto.Requests;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
-using XAct.Users;
 using BamdadPaymentCore.Domain.Common;
 
 
@@ -70,10 +58,10 @@ namespace BamdadPaymentCore.SOAP
 
         public string GetOnlineIdWithSettle(string username, string pass, string price, string desc, string reqId, string kind, string? mobleNomber = null)
         {
-            string result = string.Empty;
+            var result = string.Empty;
             try
             {
-                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, true, mobleNomber: mobleNomber);
+                result = paymentService.GetOnlineIdDifferentTypes(username, pass, price, desc, reqId, kind, true,  mobleNomber);
             }
             catch (Exception ex)
             {

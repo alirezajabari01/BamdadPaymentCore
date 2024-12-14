@@ -4,13 +4,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\BamdadPaymentCore.or1hnc7fxv.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c=\u0022"},{"Name":"Last-Modified","Value":"Wed, 11 Dec 2024 10:22:54 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c=\u0022"},{"Name":"Last-Modified","Value":"Sat, 14 Dec 2024 11:10:21 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/BamdadPaymentCore/BamdadPaymentCore.or1hnc7fxv.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\BamdadPaymentCore.or1hnc7fxv.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"or1hnc7fxv"},{"Name":"integrity","Value":"sha256-NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c="},{"Name":"label","Value":"_content/BamdadPaymentCore/BamdadPaymentCore.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c=\u0022"},{"Name":"Last-Modified","Value":"Wed, 11 Dec 2024 10:22:54 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u0022NHrV2sVuoiQz7InustQ4VMC4kQmpRnNWnlTuVYpxq1c=\u0022"},{"Name":"Last-Modified","Value":"Sat, 14 Dec 2024 11:10:21 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/BamdadPaymentCore/css/site.c2tiyv64ts.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\css\site.css'))</AssetFile>

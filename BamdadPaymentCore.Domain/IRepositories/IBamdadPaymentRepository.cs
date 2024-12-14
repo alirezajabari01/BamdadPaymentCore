@@ -12,7 +12,7 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         SiteAuthenticationResult SelectSiteAuthentication(SiteAuthenticationParameter parameter);
 
-        List<SelectOnlinePayResult> SelectOnlinePay(SelectOnlinePayParameter parameter);
+        SelectOnlinePayResult SelectOnlinePay(SelectOnlinePayParameter parameter);
 
         List<SelectBankDetailResult> SelectBankDetail(SelectBankDetailParameter parameter);
 
