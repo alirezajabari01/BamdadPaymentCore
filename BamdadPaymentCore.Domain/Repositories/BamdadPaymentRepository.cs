@@ -132,8 +132,7 @@ namespace BamdadPaymentCore.Domain.Repositories
                 .ToList().FirstOrDefault();
         }
 
-        public void UpdateOnlinePaySettleFailed(
-            UpdateOnlinePayResWithSettleFailedParameter parameter)
+        public void UpdateOnlinePaySettleFailed(UpdateOnlinePayResWithSettleFailedParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
@@ -370,7 +369,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.Online_OrderNo
+                Value = parameter.Online_OrderNo ?? (object)DBNull.Value,
             };
 
             var errorCodeParam = new SqlParameter("@Online_ErrorCode", SqlDbType.Int)
@@ -382,7 +381,7 @@ namespace BamdadPaymentCore.Domain.Repositories
             var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
-                Value = parameter.CardHolderInfo
+                Value = parameter.CardHolderInfo ?? (object)DBNull.Value,
             };
 
             var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)

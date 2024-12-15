@@ -19,7 +19,7 @@ namespace BamdadPaymentCore.Controllers
     {
         public IActionResult Index()
         {
-            var t = paymentService.GetOnlineStatus(new GetOnlineStatusParameter("salamteacher", "mft", "241568"));
+            paymentService.CancelPayment("241584");
             return Ok();
         }
     }

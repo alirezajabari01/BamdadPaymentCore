@@ -33,10 +33,8 @@ namespace BamdadPaymentCore.Middlewares
             {
                 var bamdadPaymentRepository = context.RequestServices.GetService<IBamdadPaymentRepository>();
 
-                if (bamdadPaymentRepository != null)
-                {
-                    bamdadPaymentRepository.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Source));
-                }
+                bamdadPaymentRepository?.insertSiteError(new InsertSiteErrorParameter(ex.Message, ex.Message));
+
                 await context.Response.WriteAsync(ex.Message);
             }
         }

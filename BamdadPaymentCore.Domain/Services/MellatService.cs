@@ -3,6 +3,7 @@ using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.verify;
 using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
 using BamdadPaymentCore.Domain.Models.ServicesModels;
@@ -33,7 +34,7 @@ namespace BamdadPaymentCore.Domain.Services
             string resCode = Request.Form["ResCode"];
             string cardHolderInfo = Request.Form["CardHolderPan"];
 
-            if (resCode == "17") return CancelPayment(saleOrderId);
+            if (resCode == MellatCallBackCode.Canceled) return CancelPayment(saleOrderId);
 
             var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(saleOrderId));
 
@@ -42,7 +43,7 @@ namespace BamdadPaymentCore.Domain.Services
             string verifyResult = "0";
             string inquieryResult = "0";
 
-            if (resCode != "0")
+            if (resCode != MellatCallBackCode.Success)
                 if (!string.IsNullOrEmpty(resCode))
                     return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, resCode, cardHolderInfo);
 
@@ -63,9 +64,9 @@ namespace BamdadPaymentCore.Domain.Services
 
             verifyResult = VerifyTransaction(mellatRequest);
 
-            if (verifyResult != "0") inquieryResult = InquiryTransaction(mellatRequest);
+            if (verifyResult != MellatCallBackCode.Success) inquieryResult = InquiryTransaction(mellatRequest);
 
-            if (inquieryResult != "0")
+            if (inquieryResult != MellatCallBackCode.Success)
                 return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, verifyResult, cardHolderInfo);
 
 
@@ -76,16 +77,14 @@ namespace BamdadPaymentCore.Domain.Services
 
             settleResult = SettleTransaction(mellatRequest);
 
-            if (settleResult != "0" && settleResult != "45") return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
+            if (settleResult != MellatCallBackCode.Success && settleResult != "45") return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
 
 
             repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Convert.ToInt32(saleOrderId)));
 
             var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(settleResult), cardHolderInfo));
 
-            if (updateResult.Success == 0)
-                return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
-
+            if (updateResult.Success == 0) return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
 
             return updateResult.Site_ReturnUrl;
         }
