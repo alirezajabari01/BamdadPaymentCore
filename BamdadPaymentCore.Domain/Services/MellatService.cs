@@ -70,7 +70,7 @@ namespace BamdadPaymentCore.Domain.Services
                 return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, verifyResult, cardHolderInfo);
 
 
-            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId,
+            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, saleOrderId, refId, saleReferenceId,
                 Convert.ToInt32(verifyResult), cardHolderInfo)).Site_ReturnUrl;
 
             if (paymentDetail.AutoSettle == false) return url;
@@ -82,7 +82,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Convert.ToInt32(saleOrderId)));
 
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, Convert.ToInt32(settleResult), cardHolderInfo));
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(referenceNumber, saleOrderId, refId, saleReferenceId, Convert.ToInt32(settleResult), cardHolderInfo));
 
             if (updateResult.Success == 0) return FailedPayment(referenceNumber, saleOrderId, refId, saleReferenceId, settleResult, cardHolderInfo);
 
@@ -123,12 +123,12 @@ namespace BamdadPaymentCore.Domain.Services
         private string FailedPayment(string referenceNumber, string saleOrderId, string refId, string saleReferenceId, string resCode, string cardHolderInfo)
         {
             repository.insertSiteError(new InsertSiteErrorParameter(MellatErrorCodeHandler.GetErrorMessage(resCode), "mellat Service Call Back"));
-            return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId,
+            return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,saleOrderId, refId,
                 saleReferenceId, Convert.ToInt32(resCode), cardHolderInfo)).Site_ReturnUrl;
         }
 
         private string CancelPayment(string onlineId)
-            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, Convert.ToInt32(onlineId), "cancel", "Failed", -1, "use cancel payment")).Site_ReturnUrl;
+            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, onlineId, "cancel", "Failed", -1, "use cancel payment")).Site_ReturnUrl;
 
         private string PayNormalMelat(SelectPaymentDetailResult paymentDetail, string reqOnlineId, string date, string time, string ReturnBank)
        => mellatGateway.bpPayRequest(new bpPayRequest(new bpPayRequestBody(

@@ -73,7 +73,7 @@ namespace BamdadPaymentCore.Domain.Services
         }
 
         public string CancelPayment(string onlineId)
-            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, ConvertToInt(onlineId),
+            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(null, onlineId,
                     "cancel", "Failed", -1, "use cancel payment"))
                 .Site_ReturnUrl;
 
@@ -108,10 +108,10 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (settleResult.ResCode != 0) throw new GetTransationResultException();
 
-            repository.UpdateOnlinePayWithSettle(new UpdateOnlinePayWithSettleParameter(ConvertToInt(request.OnlineId), tranResult.refId,
+            repository.UpdateOnlinePayWithSettle(new UpdateOnlinePayWithSettleParameter(request.OnlineId, tranResult.refId,
                 tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
 
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber, ConvertToInt(request.OnlineId),
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber, request.OnlineId,
                 tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
 
             if (updateResult.Success == 0) throw new UpdateOnlinePaymentException();
@@ -139,7 +139,7 @@ namespace BamdadPaymentCore.Domain.Services
             var settleResult = asanRestService.SettleAsan(tranResult, paymentDetail, request.OnlineId);
 
             var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-                ConvertToInt(request.OnlineId), tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
+                request.OnlineId, tranResult.refId, tranResult.saleReferenceId, settleResult.ResCode, tranResult.cardHolderInfo));
 
             if (updateResult.Success == 0)
                 throw new UpdateOnlinePaymentException();
@@ -150,7 +150,7 @@ namespace BamdadPaymentCore.Domain.Services
         public string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo,
             string orderNo, string errorCode, string cardHolderInfo)
             => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,
-                    ConvertToInt(onlineId), transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo))
+                    onlineId, transactionNo, orderNo, ConvertToInt(errorCode), cardHolderInfo))
                 .Site_ReturnUrl;
 
         public void InsertSiteError(InsertSiteErrorParameter request)
@@ -158,7 +158,7 @@ namespace BamdadPaymentCore.Domain.Services
 
         public string FreePayment(string onlineId)
             => repository
-                .UpdateOnlinePayment(new UpdateOnlinePayParameter("", ConvertToInt(onlineId), "Free", "Free", -1, ""))
+                .UpdateOnlinePayment(new UpdateOnlinePayParameter("", onlineId, "Free", "Free", -1, ""))
                 .Site_ReturnUrl;
 
         public bool ReqVerify(VerifyRequest request)
@@ -186,7 +186,7 @@ namespace BamdadPaymentCore.Domain.Services
             if (transactionResult.ResCode != 0)
             {
                 repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
-                    ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                    request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
                     transactionResult.ResCode, transactionResult.CardNumber));
                 throw new GetTransationResultException();
             }
@@ -203,13 +203,13 @@ namespace BamdadPaymentCore.Domain.Services
             if (verifyRes.ResCode != 0)
             {
                 repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
-                    ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                    request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
                     verifyRes.ResCode, transactionResult.CardNumber));
                 throw new VerifyTransationException();
             }
 
             repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(transactionResult.Rrn,
-                ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
                 verifyRes.ResCode, transactionResult.CardNumber));
 
             return true;

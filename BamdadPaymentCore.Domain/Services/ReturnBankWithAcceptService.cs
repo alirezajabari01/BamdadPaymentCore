@@ -14,7 +14,7 @@ namespace BamdadPaymentCore.Domain.Services
 
             if (resCode != "0") return paymentService.UpdateOnlinePayFailed(referenceNumber, onlineId, refId, saleReferenceId, resCode, cardInfo);
 
-            return repository.UpdateOnlinePayWithSettle(new UpdateOnlinePayWithSettleParameter(Convert.ToInt32(onlineId), refId, saleReferenceId, 0, cardInfo)).Site_ReturnUrl;
+            return repository.UpdateOnlinePayWithSettle(new UpdateOnlinePayWithSettleParameter(onlineId, refId, saleReferenceId, 0, cardInfo)).Site_ReturnUrl;
         }
     }
 }

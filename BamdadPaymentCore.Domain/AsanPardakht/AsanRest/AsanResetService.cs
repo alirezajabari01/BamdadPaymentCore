@@ -459,19 +459,18 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             if (verifyRes.ResCode != 0)
             {
                 return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
-                     Int(onlineId), tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
+                     onlineId, tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
                      tranResult.cardHolderInfo)).Site_ReturnUrl;
             }
 
             var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-                Int(onlineId), tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
+                onlineId, tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
 
             if (paymentDetail.AutoSettle is false) return url;
 
             var settleRes = SettleAsan(tranResult, paymentDetail, onlineId);
 
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-              Int(onlineId), tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
+            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
 
             if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
 
@@ -481,7 +480,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
         public string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo,
             string orderNo, string errorCode, string cardHolderInfo)
             => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,
-                    Int(onlineId), transactionNo, orderNo, Int(errorCode), cardHolderInfo))
+                    onlineId, transactionNo, orderNo, Int(errorCode), cardHolderInfo))
                 .Site_ReturnUrl;
 
         private int Int(string value) => Convert.ToInt32(value);
