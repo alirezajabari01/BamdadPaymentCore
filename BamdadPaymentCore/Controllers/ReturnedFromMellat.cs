@@ -1,4 +1,5 @@
-﻿using BamdadPaymentCore.Domain.Exceptions;
+﻿using BamdadPaymentCore.Domain.Common;
+using BamdadPaymentCore.Domain.Exceptions;
 using BamdadPaymentCore.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +13,10 @@ namespace BamdadPaymentCore.Controllers
 
             if (Uri.TryCreate(result, UriKind.Absolute, out var uriResult) && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                return Redirect(result);
+                return Redirect(result + "?OnlineID=" + Request.Form["SaleOrderId"]);
             }
 
-            throw new AppException(result);
+            throw new ReturnFromMellatException();
         }
     }
 }

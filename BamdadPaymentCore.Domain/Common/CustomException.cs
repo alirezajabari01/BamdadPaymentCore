@@ -23,4 +23,8 @@ namespace BamdadPaymentCore.Domain.Common
     public class OnlineIdNotFoundException() : AppException(" OnlineId NotFound ", HttpStatusCode.NotFound);
 
     public class SiteAuthenticationException() : AppException(" Authentication Failed ", HttpStatusCode.Unauthorized);
+
+    public class ReturnFromAsanException() : AppException(" Bank Call Back Failed ", HttpStatusCode.BadRequest);
+
+    public class ReturnFromMellatException() : AppException(" Bank Call Back Failed ", HttpStatusCode.BadRequest);
 }

@@ -79,6 +79,7 @@ namespace BamdadPaymentCore.SOAP
             try
             {
                 onlineStatus = paymentService.GetOnlineStatus(GetOnlineStatusRequestMapper.ToGetOnlineStatusRequest(username, pass, onlineId));
+                onlineStatus.TableName = "OnlinePayStatus";
             }
             catch (Exception ex)
             {

@@ -27,8 +27,8 @@
   },
   {
     "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
-    "Method": "OnlineStatus",
-    "RelativePath": "api/Payment/OnlineStatus",
+    "Method": "GetOnlineStatus",
+    "RelativePath": "api/Payment/GetOnlineStatus",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
