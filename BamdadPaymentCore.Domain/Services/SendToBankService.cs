@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace BamdadPaymentCore.Domain.Services
 {
-    public class SendToBankService(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
+    public class SendToBankService(IPaymentService paymentService, IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
         , IBamdadPaymentRepository paymentRepository, IMellatService mellatService) : ISendToBankService
     {
 

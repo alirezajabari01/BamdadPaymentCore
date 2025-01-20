@@ -15,7 +15,7 @@ using System.Net;
 
 namespace BamdadPaymentCore.Controllers
 {
-    public class SendToBank(IPaymentService paymentService, IOptions<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
+    public class SendToBank(IPaymentService paymentService, IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting, IAsanRestService asanRestService
         , IBamdadPaymentRepository paymentRepository, IMellatService mellatService) : Controller
     {
         public IActionResult Index()

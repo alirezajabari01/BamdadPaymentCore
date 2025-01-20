@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 namespace BamdadPaymentCore.Domain.Services
 {
     public class MellatService(IBamdadPaymentRepository repository, IPaymentGateway mellatGateway, IPaymentGateway mellatGatewayService,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IMellatService
+        IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting) : IMellatService
     {
         public string InquiryTransaction(MellatRequest requst)
         => mellatGatewayService.bpInquiryRequest(new bpInquiryRequest(new bpInquiryRequestBody(requst.terminalId, requst.userName, requst.userPassword, requst.orderId, requst.saleOrderId, requst.saleReferenceId))).Body.@return;

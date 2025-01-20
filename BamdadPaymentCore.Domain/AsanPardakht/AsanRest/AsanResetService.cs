@@ -26,7 +26,7 @@ using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 
 namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
-    public class AsanResetService(IBamdadPaymentRepository repository, IOptions<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
+    public class AsanResetService(IBamdadPaymentRepository repository, IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
     {
         public async Task<ReverseVm> ReverseTransaction(AsanRestRequest requst)
         {

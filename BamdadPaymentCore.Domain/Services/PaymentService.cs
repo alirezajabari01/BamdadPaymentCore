@@ -31,7 +31,7 @@ namespace BamdadPaymentCore.Domain.Services
     public class PaymentService(
         IBamdadPaymentRepository repository,
         IHttpContextAccessor httpContextAccessor,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting,
+        IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting,
         IAsanRestService asanRestService,
         IMellatService mellatService) : IPaymentService
     {

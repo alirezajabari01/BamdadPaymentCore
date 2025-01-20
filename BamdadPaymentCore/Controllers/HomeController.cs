@@ -14,7 +14,7 @@ namespace BamdadPaymentCore.Controllers
         IPaymentService paymentService,
         IHttpContextAccessor httpContextAccessor,
         IBamdadPaymentRepository bamdadPaymentRepository,
-        IOptions<PaymentGatewaySetting> paymentGatewaySetting,
+        IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting,
         IMellatService mellatService) : ControllerBase
     {
         public IActionResult Index()
