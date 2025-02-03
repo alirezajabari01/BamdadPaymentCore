@@ -1,6 +1,7 @@
 ﻿using BamdadPaymentCore.Domain.Database;
 using BamdadPaymentCore.Domain.Entites;
 using BamdadPaymentCore.Domain.IRepositories;
+using BamdadPaymentCore.Domain.Models.ControllerDto;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
@@ -79,7 +80,7 @@ namespace BamdadPaymentCore.Domain.Repositories
         public List<SelectOnlinePayDetailResult> SelectOnlinePayDetail(SelectOnlinePayDetailParameter parameter)
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int) { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
-           
+
             return context.Database
                 .SqlQuery<SelectOnlinePayDetailResult>(
                     $"EXEC dbo.Sp_SelectOnlinePayDetail @Online_ID = {parameter.Online_ID}").ToList();
@@ -436,5 +437,14 @@ namespace BamdadPaymentCore.Domain.Repositories
                 .SqlQuery<int>($"EXEC {StoreProcedureName.InsertTransactionResult}  {onlineIdParam},{transactionNoParam},{orderNoParam},{errorCodeParam},{referenceNumberParam},{cardHolderInfoParam}")
                 .ToList().FirstOrDefault();
         }
+
+        public List<GetPaymentReportResponse> PaymentReport(GetPaymentReportParameter parameter)
+          => context.Database.SqlQueryRaw<GetPaymentReportResponse>($"EXEC {StoreProcedureName.GetPaymentReport} @StartDate,@EndDate,@Status,@SiteId", parameter.Parameters)
+            .ToList();
+
+        public int? GetSiteId(GetSiteIdParameter parameter)
+        => context.Database.SqlQueryRaw<int?>($"EXEC {StoreProcedureName.GetSiteId} @UserName,@Password", parameter.GetSiteIdSqlParameter)
+                .ToList().FirstOrDefault();
+
     }
 }

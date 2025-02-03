@@ -38,6 +38,8 @@ namespace BamdadPaymentCore.Domain
             services.AddScoped<IAsanRestService, AsanResetService>();
 
             services.AddScoped<IReturnBankWithAcceptService, ReturnBankWithAcceptService>();
+
+            services.AddScoped<IReportService, ReportService>();
         }
 
         public static void ConfigureOptionPattern(this WebApplicationBuilder builder)

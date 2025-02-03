@@ -41,5 +41,9 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
         public const string UpdateOnlinePaymentFailed = "dbo.Sp_UpdateOnlinePaymentFailed";
 
         public const string InsertTransactionResult = "dbo.Sp_InsertTransactionResult";
+
+        public const string GetSiteId = "dbo.GetSiteId";
+
+        public const string GetPaymentReport = "dbo.GetPaymentReport";
     }
 }

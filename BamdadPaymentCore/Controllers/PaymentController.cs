@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BamdadPaymentCore.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]/[action]")]
     public class PaymentController(IPaymentService paymentService) : ControllerBase
     {
         [HttpPost]

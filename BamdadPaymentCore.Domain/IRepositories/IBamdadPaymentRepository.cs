@@ -1,4 +1,5 @@
-﻿using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+﻿using BamdadPaymentCore.Domain.Models.ControllerDto;
+using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 
 
@@ -37,5 +38,10 @@ namespace BamdadPaymentCore.Domain.IRepositories
         UpdateOnlinePayWithSettleResult UpdateOnlinePayWithSettle(UpdateOnlinePayWithSettleParameter parameter);
 
         int InsertTransactionResult(InsertTransactionResultParameter parameter);
+
+        public List<GetPaymentReportResponse> PaymentReport(GetPaymentReportParameter parameter);
+
+        public int? GetSiteId(GetSiteIdParameter parameter);
+
     }
 }

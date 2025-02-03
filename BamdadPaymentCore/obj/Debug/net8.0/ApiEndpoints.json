@@ -1,109 +1,21 @@
 [
   {
-    "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
-    "Method": "GetOnlineId",
-    "RelativePath": "api/Payment/GetOnlineId",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "BamdadPaymentCore.Domain.Models.SoapDto.Requests.GetOnlineIdRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.ApiResult\u00601[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
-    "Method": "GetOnlineStatus",
-    "RelativePath": "api/Payment/GetOnlineStatus",
+    "ContainingType": "BamdadPaymentCore.Controllers.ReportsController",
+    "Method": "GetReport",
+    "RelativePath": "api/Reports/GetReport",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "Username",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "Password",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "OnlineId",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.ApiResult\u00601[[BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response.SelectOnlinePayResult, BamdadPaymentCore.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
-    "Method": "SettleAsanPardakht",
-    "RelativePath": "api/Payment/SettleAsanPardakht",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
         "Name": "request",
-        "Type": "BamdadPaymentCore.Domain.Models.SoapDto.Requests.ReqSettleOnlineRequest",
+        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.GetPaymentReportRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.ApiResult\u00601[[BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response.SelectOnlinePayResult, BamdadPaymentCore.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
-  },
-  {
-    "ContainingType": "BamdadPaymentCore.Controllers.PaymentController",
-    "Method": "SettleMellat",
-    "RelativePath": "api/Payment/SettleMellat",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "request",
-        "Type": "BamdadPaymentCore.Domain.Models.SoapDto.Requests.ReqSettleOnlineRequest",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": [
-      {
-        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.ApiResult\u00601[[BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response.SelectOnlinePayResult, BamdadPaymentCore.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "BamdadPaymentCore.Domain.Models.ControllerDto.ApiResult\u00601[[System.Collections.Generic.List\u00601[[BamdadPaymentCore.Domain.Models.ControllerDto.GetPaymentReportResponse, BamdadPaymentCore.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

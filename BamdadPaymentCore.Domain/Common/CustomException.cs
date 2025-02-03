@@ -27,4 +27,6 @@ namespace BamdadPaymentCore.Domain.Common
     public class ReturnFromAsanException() : AppException(" Bank Call Back Failed ", HttpStatusCode.BadRequest);
 
     public class ReturnFromMellatException() : AppException(" Bank Call Back Failed ", HttpStatusCode.BadRequest);
+
+    public class GetSiteIdException() : AppException(" SiteId NotFound ", HttpStatusCode.NotFound);
 }
