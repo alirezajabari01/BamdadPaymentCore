@@ -7,6 +7,6 @@ namespace BamdadPaymentCore.Controllers
     {
         [HttpGet("{id:int}")]
         public string Check(int id)
-         => "Bamdad Payment Code Available Your Id : " + id.ToString();
+         => "Bamdad Payment Core Available Your Id : " + id.ToString();
     }
 }
