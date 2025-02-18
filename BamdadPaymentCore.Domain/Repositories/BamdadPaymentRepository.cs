@@ -1,5 +1,6 @@
 ﻿using BamdadPaymentCore.Domain.Database;
 using BamdadPaymentCore.Domain.Entites;
+using BamdadPaymentCore.Domain.Enums;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.Models.ControllerDto;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels;
@@ -7,6 +8,7 @@ using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using System.Data;
 using XAct;
 
@@ -446,5 +448,101 @@ namespace BamdadPaymentCore.Domain.Repositories
         => context.Database.SqlQueryRaw<int?>($"EXEC {StoreProcedureName.GetSiteId} @UserName,@Password", parameter.GetSiteIdSqlParameter)
                 .ToList().FirstOrDefault();
 
+        public UpdateTransactionResultSp UpdateTransactionResult(UpdateTransactionResultParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_ID
+            };
+
+            var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_TransactionNo
+            };
+
+            var orderNoParam = new SqlParameter("@Online_OrderNo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.Online_OrderNo ?? (object)DBNull.Value,
+            };
+
+            var cardHolderInfoParam = new SqlParameter("@CardHolderInfo", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.CardHolderInfo ?? (object)DBNull.Value,
+            };
+
+            var referenceNumberParam = new SqlParameter("@ReferenceNumber", SqlDbType.VarChar, 50)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.ReferenceNumber ?? (object)DBNull.Value,
+                IsNullable = true,
+            };
+
+            return context.Database
+                .SqlQuery<UpdateTransactionResultSp>(
+                    $"EXEC {StoreProcedureName.UpdateTransactionResult}  {onlineIdParam},{transactionNoParam},{orderNoParam},{cardHolderInfoParam},{referenceNumberParam}")
+                .ToList().FirstOrDefault();
+        }
+
+        public InsertTransactionResultErrorResult InsertTransactionResultError(InsertTransactionResultErrorParameter parameter)
+        {
+            SqlParameter[] parameters =
+            [
+                new("@ResultCode", parameter.ResultCode ?? (object)DBNull.Value),
+                new("@ErrorMessage", parameter.ErrorMessage ?? (object)DBNull.Value),
+                new("@OnlineId", parameter.OnlineId ?? (object)DBNull.Value),
+                new("@Bank_MerchantID", parameter.Bank_MerchantID ?? (object)DBNull.Value),
+                new("@Bank_User", parameter.Bank_User ?? (object)DBNull.Value),
+                new("@Bank_Pass", parameter.Bank_Pass ?? (object)DBNull.Value),
+                new("@BankCode", parameter.BankCode ?? (object)DBNull.Value),
+                new("@Online_Status", parameter.Online_Status ?? (object)DBNull.Value),
+                new("@Online_Kind", parameter.Online_Kind ?? (object)DBNull.Value),
+                new("@IsSettle", parameter.IsSettle ?? (object)DBNull.Value),
+                new("@AutoSettle", parameter.AutoSettle ?? (object)DBNull.Value),
+                new("@MobileNomber", parameter.MobileNomber ?? (object)DBNull.Value)
+            ];
+
+            string query = $"EXEC {StoreProcedureName.InsertTransactionResultError} @ResultCode, @ErrorMessage, @OnlineId, @Bank_MerchantID, @Bank_User, @Bank_Pass, @BankCode, @Online_Status, @Online_Kind, @IsSettle, @AutoSettle, @MobileNomber";
+
+            return context.Database.SqlQueryRaw<InsertTransactionResultErrorResult>(query, parameters).ToList().First();
+        }
+
+        public UpdateIsSettleResult UpdateIsSettle(UpdateIsSettleParameter parameter)
+        {
+            SqlParameter[] parameters =
+            [
+               new("@OnlineId", parameter.OnlineId),
+                new("@IsSettle", parameter.IsSettle)
+            ];
+
+            string query = $"EXEC {StoreProcedureName.sp_UpdateIsSettle} @OnlineId, @IsSettle";
+
+            return context.Database.SqlQueryRaw<UpdateIsSettleResult>(query, parameters).ToList().First();
+        }
+
+        public async Task<List<GetFailedVerifyPaymentsResult>> GetFailedVerifyPayments(GetFailedVerifyPaymentsParameter parameter)
+        {
+            var onlineIdParam = new SqlParameter("@ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = parameter.AsanError
+            };
+
+            return await context.Database.SqlQuery<GetFailedVerifyPaymentsResult>
+                ($"EXEC {StoreProcedureName.GetFailedVerifyPayments} {onlineIdParam}").ToListAsync();
+        }
+
+        public UpdateVerifyFailedPaymentResult UpdateVerifyFailedPayment(UpdateVerifyFailedPaymentParameter parameter)
+        {
+            var ErrorCode = new SqlParameter("@ErrorCode", parameter.ErrorCode);
+
+            var OnlineId = new SqlParameter("@OnlineId", parameter.OnlineId);
+           
+            return context.Database.SqlQuery<UpdateVerifyFailedPaymentResult>
+                ($"EXEC {StoreProcedureName.UpdateVerifyFailedPayment} {OnlineId},{ErrorCode}").ToList().First();
+        }
     }
 }

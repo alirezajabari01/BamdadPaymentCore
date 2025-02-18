@@ -43,5 +43,14 @@ namespace BamdadPaymentCore.Domain.IRepositories
 
         public int? GetSiteId(GetSiteIdParameter parameter);
 
+        public UpdateTransactionResultSp UpdateTransactionResult(UpdateTransactionResultParameter parameter);
+
+        public InsertTransactionResultErrorResult InsertTransactionResultError(InsertTransactionResultErrorParameter parameter);
+
+        public UpdateIsSettleResult UpdateIsSettle(UpdateIsSettleParameter parameter);
+
+        public Task<List<GetFailedVerifyPaymentsResult>> GetFailedVerifyPayments(GetFailedVerifyPaymentsParameter parameter);
+
+        public UpdateVerifyFailedPaymentResult UpdateVerifyFailedPayment(UpdateVerifyFailedPaymentParameter parameter);
     }
 }

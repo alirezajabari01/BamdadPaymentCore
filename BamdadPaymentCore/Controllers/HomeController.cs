@@ -1,3 +1,4 @@
+﻿using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.settlement;
 using BamdadPaymentCore.Domain.Common;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.IServices;
@@ -7,6 +8,7 @@ using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using System.Text;
 
 namespace BamdadPaymentCore.Controllers
 {
@@ -15,12 +17,15 @@ namespace BamdadPaymentCore.Controllers
         IHttpContextAccessor httpContextAccessor,
         IBamdadPaymentRepository bamdadPaymentRepository,
         IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting,
-        IMellatService mellatService) : ControllerBase
+        IMellatService mellatService,
+        IAsanRestService asanRestService) : ControllerBase
     {
-        public IActionResult Index()
+        [HttpGet("[controller]/[action]")]
+        public async Task<IActionResult> Index()
         {
-            paymentService.CancelPayment("241584");
             return Ok();
         }
+        
     }
+
 }

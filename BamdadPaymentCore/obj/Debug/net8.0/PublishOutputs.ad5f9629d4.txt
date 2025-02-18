@@ -46,6 +46,9 @@ C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Newtonsof
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Nobisoft.Core.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Nobisoft.Core.Domain.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Nobisoft.Core.HttpContextAccessor.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Quartz.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Quartz.Extensions.DependencyInjection.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\Quartz.Extensions.Hosting.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\SoapCore.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\System.ClientModel.dll
 C:\dev\BamdadPaymentCore\BamdadPaymentCore\obj\Debug\net8.0\PubTmp\Out\System.CodeDom.dll

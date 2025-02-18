@@ -1,0 +1,15 @@
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\bin\Release\net8.0\BamdadPaymentCore.Domain.deps.json
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\bin\Release\net8.0\BamdadPaymentCore.Domain.runtimeconfig.json
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\bin\Release\net8.0\BamdadPaymentCore.Domain.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\bin\Release\net8.0\BamdadPaymentCore.Domain.pdb
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.csproj.AssemblyReference.cache
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.AssemblyInfoInputs.cache
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.AssemblyInfo.cs
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.csproj.CoreCompileInputs.cache
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.sourcelink.json
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\refint\BamdadPaymentCore.Domain.dll
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.pdb
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\BamdadPaymentCore.Domain.genruntimeconfig.cache
+C:\dev\BamdadPaymentCore\BamdadPaymentCore.Domain\obj\Release\net8.0\ref\BamdadPaymentCore.Domain.dll

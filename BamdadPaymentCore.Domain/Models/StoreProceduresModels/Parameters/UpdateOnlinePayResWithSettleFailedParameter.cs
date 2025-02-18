@@ -2,5 +2,5 @@
 
 namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters
 {
-    public record UpdateOnlinePayResWithSettleFailedParameter(string Online_ID, int Online_ErrorCode) : StoreProcedureRequestModel;
+    public record UpdateOnlinePayResWithSettleFailedParameter(int Online_ID, int Online_ErrorCode) : StoreProcedureRequestModel;
 }

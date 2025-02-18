@@ -10,6 +10,8 @@ namespace BamdadPaymentCore.Domain.IServices
 {
     public interface IPaymentService
     {
+        public bool AutoVerifyAndSettle(VerifyRequest request);
+
         string GetOnlineIdDifferentTypes(string userName, string password, string onlinePrice, string desc, string reqId, string kind, bool autoSettle, string onlineType
             , string? mobleNomber = null);
 

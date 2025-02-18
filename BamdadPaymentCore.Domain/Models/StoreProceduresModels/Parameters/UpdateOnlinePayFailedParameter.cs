@@ -26,5 +26,5 @@
         public int Online_ErrorCode { get; set; }
         public string CardHolderInfo { get; set; }
     }
-
+    
 }

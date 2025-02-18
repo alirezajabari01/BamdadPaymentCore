@@ -45,5 +45,15 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
         public const string GetSiteId = "dbo.GetSiteId";
 
         public const string GetPaymentReport = "dbo.GetPaymentReport";
+
+        public const string UpdateTransactionResult = "dbo.UpdateTransactionResult";
+
+        public const string InsertTransactionResultError = "dbo.InsertTransactionResultError";
+
+        public const string sp_UpdateIsSettle = "dbo.sp_UpdateIsSettle";
+
+        public const string GetFailedVerifyPayments = "dbo.GetFailedVerifyPayments";
+
+        public const string UpdateVerifyFailedPayment = "dbo.UpdateVerifyFailedPayment";
     }
 }

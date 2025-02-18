@@ -8,8 +8,8 @@ namespace BamdadPaymentCore.Controllers
 
     public class ReportsController(IReportService reportService) : ApiBaseController
     {
-        [HttpGet]
-        public ApiResult<List<GetPaymentReportResponse>> GetReport([FromBody] GetPaymentReportRequest request)
+        [HttpPost]
+        public ApiResult<List<GetPaymentReportResponse>> GetReport(GetPaymentReportRequest request)
          => reportService.GetPaymentReport(request);
     }
 }

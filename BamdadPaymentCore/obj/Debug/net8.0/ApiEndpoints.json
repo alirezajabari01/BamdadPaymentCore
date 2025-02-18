@@ -29,7 +29,7 @@
     "ContainingType": "BamdadPaymentCore.Controllers.ReportsController",
     "Method": "GetReport",
     "RelativePath": "api/Reports/GetReport",
-    "HttpMethod": "GET",
+    "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [

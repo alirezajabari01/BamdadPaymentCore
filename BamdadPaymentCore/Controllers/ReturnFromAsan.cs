@@ -3,6 +3,7 @@ using BamdadPaymentCore.Domain.Entites;
 using BamdadPaymentCore.Domain.Exceptions;
 using BamdadPaymentCore.Domain.IServices;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace BamdadPaymentCore.Controllers
 {
@@ -12,8 +13,6 @@ namespace BamdadPaymentCore.Controllers
         {
             string onlineId = Request.Query["invoiceid"]!;
             string queryString = "?OnlineID=" + onlineId;
-            
-            if (string.IsNullOrEmpty(Request.Form["PaygateTranId"])) return Redirect(paymentService.CancelPayment(onlineId) + queryString);
 
             string result = asanRestService.ProcessAsanPardakhtPayment(onlineId) + queryString;
 

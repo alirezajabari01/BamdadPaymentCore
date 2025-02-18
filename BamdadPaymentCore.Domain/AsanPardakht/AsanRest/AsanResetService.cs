@@ -23,6 +23,12 @@ using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.verify;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
+using BamdadPaymentCore.Domain.Models.ControllerDto;
+using Microsoft.AspNetCore.SignalR.Protocol;
+using BamdadPaymentCore.Domain.Enums;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using XAct.Utils;
+using Uri = System.Uri;
 
 namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
@@ -334,16 +340,32 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
             var tranResult = TransactionResult(tranReq).Result;
 
-            string saleOrderId = onlineId;
-            string refId = tranResult.RefId;
-            string saleReferenceId = tranResult.PayGateTranID.ToString();
-            string cardHolderInfo = tranResult.CardNumber;
-            string referenceNumber = tranResult.Rrn;
+            return new(tranResult.RefId, tranResult.PayGateTranID.ToString(), tranResult.CardNumber, tranResult.Rrn, tranResult.ResMessage, tranResult.ResCode);
+        }
 
-            repository.InsertTransactionResult
-                (new InsertTransactionResultParameter(referenceNumber, Convert.ToInt32(saleOrderId), refId, saleReferenceId, tranResult.ResCode, cardHolderInfo));
+        public SettleVm SettleAsan(SettleAsanInput input)
+        {
+            var settleCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = int.Parse(paymentGatewaySetting.Value.AsanMerchantId),
+                payGateTranId = Convert.ToUInt64(input.SaleReferenceId),
+                BankUser = input.bankUser,
+                BankPassword = input.BankPass,
+            };
 
-            return new(refId, saleReferenceId, cardHolderInfo, referenceNumber, tranResult.ResMessage, tranResult.ResCode);
+            var settleRes = SettleTransaction(settleCommand).Result;
+
+            if (settleRes.ResCode != 0)
+            {
+                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(input.OnlineId, settleRes.ResCode));
+            }
+            else
+            {
+                repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(input.OnlineId));
+
+            }
+
+            return settleRes;
         }
 
         public SettleVm SettleAsan(AsanTransactionResult tranResult, SelectPaymentDetailResult paymentDetail, string onlineId)
@@ -360,12 +382,12 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
             if (settleRes.ResCode != 0)
             {
-                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(onlineId, settleRes.ResCode));
+                repository.UpdateOnlinePaySettleFailed(new UpdateOnlinePayResWithSettleFailedParameter(Int(onlineId), settleRes.ResCode));
             }
-
-            repository.UpdateOnlinePayResWithSettle(
-              new UpdateOnlinePayResWithSettleParameter(Int(onlineId)));
-
+            else
+            {
+                repository.UpdateOnlinePayResWithSettle(new UpdateOnlinePayResWithSettleParameter(Int(onlineId)));
+            }
             return settleRes;
         }
 
@@ -416,7 +438,136 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             return true;
         }
 
+        public async Task PayFailedVerifyPayments()
+        {
+            var pendings = await repository.GetFailedVerifyPayments(new GetFailedVerifyPaymentsParameter(AsanError.VerifyErrored));
+
+            if (pendings != null && pendings.Count > 0)
+            {
+                foreach (var pending in pendings)
+                {
+                    try
+                    {
+                        ProcessPayFailedVerifyPayments(pending);
+                    }
+                    catch (Exception ex) { }
+
+                }
+            }
+        }
+
+        public string ProcessAsanPardakhtPayment(string onlineId)
+        {
+            int OnlineIdInt = Int(onlineId);
+
+            if (string.IsNullOrEmpty(onlineId)) return SiteErrorResponse.NullOrEmptyOnlineId;
+
+            SelectPaymentDetailResult paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
+
+            if (paymentDetail is null || paymentDetail.IsSettle is 1) return SiteErrorResponse.PaymentNotValid;
+
+            AsanTransactionResult? tranResult = null;
+            string url = string.Empty;
+            try
+            {
+                tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
+
+                if(tranResult.resCode == 0)
+                {
+                    url = UpdateTransactionResult(tranResult, onlineId);
+                }
+                else
+                {
+                    repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(" ", onlineId, "", "", 0, ""));
+                }
+                if (tranResult.resCode == 472)
+                {
+                    repository.UpdateOnlinePaymentFailed
+                        (new UpdateOnlinePayFailedParameter("canceled", onlineId, "failed", "failed", 472, ""));
+                }
+                if (tranResult.resCode != 0)
+                {
+
+
+                    return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogInsertSiteError(ex.Message, SiteErrorResponse.BankTransationResultException);
+                return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
+            }
+
+            var verifyCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
+                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+            var verifyRes = Verify(verifyCommand, OnlineIdInt);
+
+            if (verifyRes != "success") return verifyRes;
+
+            if (paymentDetail.AutoSettle is false) return url;
+
+            var input = new SettleAsanInput(paymentDetail.Bank_User, paymentDetail.Bank_Pass, tranResult.saleReferenceId, OnlineIdInt);
+
+            return Settle(input, url, OnlineIdInt);
+        }
+
+        public string ProcessPayFailedVerifyPayments(GetFailedVerifyPaymentsResult faileds)
+        {
+            var verifyCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = Convert.ToInt32(faileds.Bank_MerchantID),
+                payGateTranId = Convert.ToUInt64(faileds.Online_OrderNo),
+                BankUser = faileds.Bank_User,
+                BankPassword = faileds.Bank_Pass,
+            };
+            var verifyRes = Verify(verifyCommand, faileds.Online_ID);
+
+            if (verifyRes != "success") return verifyRes;
+
+            var input = new SettleAsanInput(faileds.Bank_User, faileds.Bank_Pass, faileds.Online_OrderNo, faileds.Online_ID);
+
+            return Settle(input, faileds.Site_ReturnUrl, faileds.Online_ID);
+        }
+
+
         #region PrivateMethods
+
+        private string Settle(SettleAsanInput input, string url, int onlineId)
+        {
+            try
+            {
+                var settleRes = SettleAsan(input);
+                if (settleRes.ResCode == 0) return url;
+                return SiteErrorResponse.NullOrEmptyOnlineId;
+            }
+            catch (Exception ex)
+            {
+                LogInsertSiteError(ex.Message, SiteErrorResponse.BankSettleException);
+                return UpdateIsSettle(onlineId.ToString(), AsanError.SettleErrored);
+            }
+        }
+
+        private string Verify(AsanRestRequest req, int onlineId)
+        {
+            try
+            {
+                var verifyRes = VerifyTransaction(req).Result;
+
+                if (verifyRes.ResCode != 0) return UpdateVerifyFailedPayment(verifyRes.ResCode, onlineId);
+
+                return "success";
+            }
+            catch (Exception ex)
+            {
+                LogInsertSiteError(ex.Message, SiteErrorResponse.BankVerifyException);
+                return UpdateVerifyFailedPayment(AsanError.VerifyErrored, onlineId);
+            }
+        }
 
         private HttpClient CreateClient(string bankUser, string bankPass)
         {
@@ -433,57 +584,33 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             return client;
         }
 
-        public string ProcessAsanPardakhtPayment(string onlineId)
-        {
-            if (string.IsNullOrEmpty(onlineId)) return SiteErrorResponse.NullOrEmptyOnlineId;
-
-            SelectPaymentDetailResult paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(onlineId));
-
-            if (paymentDetail == null) return SiteErrorResponse.PaymentNotValid;
-
-            var tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
-
-            if (tranResult.resCode != 0)
-                return UpdateOnlinePayFailed(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId,
-                    tranResult.resCode.ToString(), tranResult.cardHolderInfo);
-
-            var verifyCommand = new AsanRestRequest
-            {
-                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID.ToString()),
-                payGateTranId = Convert.ToUInt64(tranResult.saleReferenceId),
-                BankUser = paymentDetail.Bank_User,
-                BankPassword = paymentDetail.Bank_Pass,
-            };
-            var verifyRes = VerifyTransaction(verifyCommand).Result;
-
-            if (verifyRes.ResCode != 0)
-            {
-                return repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
-                     onlineId, tranResult.refId, tranResult.saleReferenceId.ToString(), verifyRes.ResCode,
-                     tranResult.cardHolderInfo)).Site_ReturnUrl;
-            }
-
-            var url = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber,
-                onlineId, tranResult.refId, tranResult.saleReferenceId, verifyRes.ResCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
-
-            if (paymentDetail.AutoSettle is false) return url;
-
-            var settleRes = SettleAsan(tranResult, paymentDetail, onlineId);
-
-            var updateResult = repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(tranResult.referenceNumber, onlineId, tranResult.refId, tranResult.saleReferenceId, settleRes.ResCode, tranResult.cardHolderInfo));
-
-            if (updateResult.Success == 1) return updateResult.Site_ReturnUrl;
-
-            return SiteErrorResponse.NullOrEmptyOnlineId;
-        }
-
         public string UpdateOnlinePayFailed(string referenceNumber, string onlineId, string transactionNo,
             string orderNo, string errorCode, string cardHolderInfo)
             => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(referenceNumber,
                     onlineId, transactionNo, orderNo, Int(errorCode), cardHolderInfo))
                 .Site_ReturnUrl;
 
+        public string UpdateTransactionResult(AsanTransactionResult result, string onlineId)
+        => repository.UpdateTransactionResult(new UpdateTransactionResultParameter(result.referenceNumber, onlineId, result.refId, result.saleReferenceId, result.cardHolderInfo)).Site_ReturnUrl;
+
         private int Int(string value) => Convert.ToInt32(value);
+
+        private string InsertTransactionResultError(SelectPaymentDetailResult detail, AsanTransactionResult tranRes, string onlineId)
+            => repository.InsertTransactionResultError(new InsertTransactionResultErrorParameter
+                (tranRes.resCode, tranRes.resMessage, Convert.ToInt32(onlineId), detail.Bank_MerchantID, detail.Bank_User, detail.Bank_Pass, detail.BankCode, detail.Online_Status, detail.Online_Kind, detail.IsSettle, detail.AutoSettle, detail.MobileNomber)).Site_ReturnUrl;
+
+        private string UpdateOnlinePaymentFailed(AsanTransactionResult tranResult, string onlineId, int resCode)
+            => repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(tranResult.referenceNumber,
+                         onlineId, tranResult.refId, tranResult.saleReferenceId.ToString(), resCode, tranResult.cardHolderInfo)).Site_ReturnUrl;
+
+        private string UpdateIsSettle(string onlineId, int error)
+            => repository.UpdateIsSettle(new UpdateIsSettleParameter(onlineId, error)).Site_ReturnUrl;
+
+        private void LogInsertSiteError(string message, string reason)
+            => repository.insertSiteError(new InsertSiteErrorParameter(message, reason));
+
+        private string UpdateVerifyFailedPayment(int errorCode, int onlineId)
+            => repository.UpdateVerifyFailedPayment(new UpdateVerifyFailedPaymentParameter(errorCode.ToString(), onlineId)).Site_ReturnUrl;
 
         #endregion
     }

@@ -42,6 +42,58 @@ namespace BamdadPaymentCore.Domain.Services
 
         #endregion
 
+        public bool AutoVerifyAndSettle(VerifyRequest request)
+        {
+            var paymentDetail = repository.SelectPaymentDetail(new SelectPaymentDetailParameter(request.OnlineId));
+
+            if (paymentDetail is null) throw new PaymentDetailException();
+
+            var tranReq = new TransactionResultRequest
+            (
+                paymentGatewaySetting.Value.AsanMerchantId,
+                request.OnlineId,
+                paymentDetail.Bank_User,
+                paymentDetail.Bank_Pass
+            );
+            var transactionResult = asanRestService.TransactionResult(tranReq).Result;
+
+            repository.InsertTransactionResult(new InsertTransactionResultParameter(transactionResult.Rrn,
+                ConvertToInt(request.OnlineId), transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                transactionResult.ResCode, transactionResult.CardNumber));
+
+            if (transactionResult.ResCode != 0)
+            {
+                repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
+                    request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                    transactionResult.ResCode, transactionResult.CardNumber));
+                throw new GetTransationResultException();
+            }
+
+            var verifyCommand = new AsanRestRequest
+            {
+                merchantConfigurationId = Convert.ToInt32(paymentDetail.Bank_MerchantID),
+                payGateTranId = Convert.ToUInt64(transactionResult.PayGateTranID),
+                BankUser = paymentDetail.Bank_User,
+                BankPassword = paymentDetail.Bank_Pass,
+            };
+            var verifyRes = asanRestService.VerifyTransaction(verifyCommand).Result;
+
+            if (verifyRes.ResCode != 0)
+            {
+                repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(transactionResult.Rrn,
+                    request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                    verifyRes.ResCode, transactionResult.CardNumber));
+                throw new VerifyTransationException();
+            }
+
+            repository.UpdateOnlinePayment(new UpdateOnlinePayParameter(transactionResult.Rrn,
+                request.OnlineId, transactionResult.RefId, transactionResult.PayGateTranID.ToString(),
+                verifyRes.ResCode, transactionResult.CardNumber));
+
+            return true;
+        }
+
+
         public ApiResult<string> GetOnlineId(GetOnlineIdRequest request)
         {
             //TODO Custom Exception should be added 
