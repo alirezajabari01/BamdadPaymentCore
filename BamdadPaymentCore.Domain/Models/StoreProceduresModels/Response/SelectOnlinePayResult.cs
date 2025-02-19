@@ -11,8 +11,8 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response
         public bool Status { get; set; }
         public int? IsSettle { get; set; }
         public string? OrderNo { get; set; }
-        public string ErrorCode { get; set; }
-        public string TransactionNo { get; set; }
+        public string ErrorCode { get; set; } = "";
+        public string TransactionNo { get; set; } = "";
         public int ErrorCode_ID { get; set; }
     }
 }

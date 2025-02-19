@@ -1,4 +1,5 @@
-﻿using BamdadPaymentCore.Domain.Models.ControllerDto;
+﻿using BamdadPaymentCore.Domain.Entites;
+using BamdadPaymentCore.Domain.Models.ControllerDto;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
 
@@ -7,6 +8,8 @@ namespace BamdadPaymentCore.Domain.IRepositories
 {
     public interface IBamdadPaymentRepository
     {
+        public void Update(OnlinePay onlinePay);
+
         InsertIntoOnlinePayResult InsertOnlinePay(InsertIntoOnlinePayParameter parameter);
 
         SelectBankIdResult SelectBankID(SelectBankIdParameter parameter);

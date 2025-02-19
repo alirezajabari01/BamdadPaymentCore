@@ -6,6 +6,7 @@ using BamdadPaymentCore.Domain.Models.ControllerDto;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Response;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
@@ -16,6 +17,29 @@ namespace BamdadPaymentCore.Domain.Repositories
 {
     internal class BamdadPaymentRepository(NimkatOnlineContext context) : IBamdadPaymentRepository
     {
+        public void Update(OnlinePay onlinePay)
+        {
+            SqlParameter[] parameters =
+            [
+                new("@OnlineId", onlinePay.OnlineId),
+                new("@OnlineTransactionNo", (object?)onlinePay.OnlineTransactionNo ?? DBNull.Value),
+                new("@OnlineOrderNo", (object?)onlinePay.OnlineOrderNo ?? DBNull.Value),
+                new("@OnlinePrice", (object?)onlinePay.OnlinePrice ?? DBNull.Value),
+                new("@OnlineErrorCode", (object?)onlinePay.OnlineErrorCode ?? DBNull.Value),
+                new("@IsSettle", (object?)onlinePay.IsSettle ?? DBNull.Value),
+                new("@CardHolderInfo", (object?)onlinePay.CardHolderInfo ?? DBNull.Value),
+                new("@ReferenceNumber", (object?)onlinePay.ReferenceNumber ?? DBNull.Value),
+                new("@AutoSettle", (object?)onlinePay.AutoSettle ?? DBNull.Value)
+            ];
+
+            string query = $"EXEC {StoreProcedureName.UpdateOP} " +
+               "@OnlineId, @OnlineTransactionNo, @OnlineOrderNo, @OnlinePrice, @OnlineErrorCode, " +
+               "@IsSettle, @CardHolderInfo, @ReferenceNumber, @AutoSettle";
+
+
+            context.Database.ExecuteSqlRaw(query, parameters);
+        }
+
         public InsertIntoOnlinePayResult InsertOnlinePay(InsertIntoOnlinePayParameter parameter)
         {
             var bankId = new SqlParameter("@Bank_ID", SqlDbType.Int)
@@ -74,9 +98,10 @@ namespace BamdadPaymentCore.Domain.Repositories
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
-            return context.Database
+            var d= context.Database
                 .SqlQuery<SelectOnlinePayResult>($"EXEC  {StoreProcedureName.SelectOnlinePay}  {siteIdParam}")
                 .ToList().First();
+            return d;
         }
 
         public List<SelectOnlinePayDetailResult> SelectOnlinePayDetail(SelectOnlinePayDetailParameter parameter)
@@ -455,7 +480,12 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Direction = ParameterDirection.Input,
                 Value = parameter.Online_ID
             };
-
+            var errorCode = parameter.ErrorCode.TryParseAsInt(-2);
+            var ErrorCodeParam = new SqlParameter("@ErrorCode", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Input,
+                Value = errorCode
+            };
             var transactionNoParam = new SqlParameter("@Online_TransactionNo", SqlDbType.VarChar, 50)
             {
                 Direction = ParameterDirection.Input,
@@ -483,7 +513,7 @@ namespace BamdadPaymentCore.Domain.Repositories
 
             return context.Database
                 .SqlQuery<UpdateTransactionResultSp>(
-                    $"EXEC {StoreProcedureName.UpdateTransactionResult}  {onlineIdParam},{transactionNoParam},{orderNoParam},{cardHolderInfoParam},{referenceNumberParam}")
+                    $"EXEC {StoreProcedureName.UpdateTransactionResult}  {onlineIdParam},{ErrorCodeParam},{transactionNoParam},{orderNoParam},{cardHolderInfoParam},{referenceNumberParam}")
                 .ToList().FirstOrDefault();
         }
 

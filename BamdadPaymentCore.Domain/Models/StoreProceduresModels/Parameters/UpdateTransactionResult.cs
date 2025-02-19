@@ -5,6 +5,7 @@
         public UpdateTransactionResultParameter(
             string referenceNumber,
             string online_ID,
+            string errorCode,
             string online_TransactionNo = "Failed",
             string online_OrderNo = "Failed",
             string cardHolderInfo = ""
@@ -12,9 +13,10 @@
         {
             ReferenceNumber = referenceNumber;
             Online_ID = Convert.ToInt32(online_ID);
-            Online_TransactionNo = online_TransactionNo;
-            Online_OrderNo = online_OrderNo;
-            CardHolderInfo = cardHolderInfo;
+            ErrorCode = errorCode;
+            Online_TransactionNo = online_TransactionNo ?? "failed";
+            Online_OrderNo = online_OrderNo ?? "failed";
+            CardHolderInfo = cardHolderInfo ?? "";
         }
 
         public string ReferenceNumber { get; set; }
@@ -22,6 +24,7 @@
         public string Online_TransactionNo { get; set; }
         public string Online_OrderNo { get; set; }
         public string CardHolderInfo { get; set; }
+        public string ErrorCode { get; set; }
     }
 
     

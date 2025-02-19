@@ -46,7 +46,7 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
 
         public const string GetPaymentReport = "dbo.GetPaymentReport";
 
-        public const string UpdateTransactionResult = "dbo.UpdateTransactionResult";
+        public const string UpdateTransactionResult = "dbo.UpdateTransactionResultwithErrorCode";
 
         public const string InsertTransactionResultError = "dbo.InsertTransactionResultError";
 
@@ -55,5 +55,7 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
         public const string GetFailedVerifyPayments = "dbo.GetFailedVerifyPayments";
 
         public const string UpdateVerifyFailedPayment = "dbo.UpdateVerifyFailedPayment";
+
+        public const string UpdateOP = "dbo.UpdateOP";
     }
 }

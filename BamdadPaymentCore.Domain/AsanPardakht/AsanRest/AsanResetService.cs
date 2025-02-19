@@ -29,6 +29,7 @@ using BamdadPaymentCore.Domain.Enums;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using XAct.Utils;
 using Uri = System.Uri;
+using BamdadPaymentCore.Domain.Entites;
 
 namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
@@ -471,25 +472,27 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             try
             {
                 tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
+               url=  repository.UpdateTransactionResult(new UpdateTransactionResultParameter(tranResult.referenceNumber, onlineId, tranResult.resCode.ToString(), tranResult.refId, tranResult.saleReferenceId, tranResult.cardHolderInfo)).Site_ReturnUrl;
+                //repository.Update(new OnlinePay()
+                //{
+                //    OnlineId = OnlineIdInt,
+                //    OnlineErrorCode = tranResult.resCode.ToString(),
+                //    AutoSettle = paymentDetail.AutoSettle,
+                //    CardHolderInfo = tranResult.cardHolderInfo ?? "",
+                //    IsSettle = paymentDetail.IsSettle,
+                //    OnlineOrderNo = tranResult.saleReferenceId ?? "",
+                //    OnlineTransactionNo = tranResult.refId ?? "",
+                //    ReferenceNumber = tranResult.referenceNumber ?? "",
+                //    OnlinePrice = paymentDetail.Online_Price
+                //});
 
-                if(tranResult.resCode == 0)
-                {
-                    url = UpdateTransactionResult(tranResult, onlineId);
-                }
-                else
-                {
-                    repository.UpdateOnlinePaymentFailed(new UpdateOnlinePayFailedParameter(" ", onlineId, "", "", 0, ""));
-                }
-                if (tranResult.resCode == 472)
-                {
-                    repository.UpdateOnlinePaymentFailed
-                        (new UpdateOnlinePayFailedParameter("canceled", onlineId, "failed", "failed", 472, ""));
-                }
                 if (tranResult.resCode != 0)
                 {
-
-
                     return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
+                }
+                else {
+                    url = UpdateTransactionResult(tranResult, onlineId);
+                   
                 }
             }
             catch (Exception ex)
