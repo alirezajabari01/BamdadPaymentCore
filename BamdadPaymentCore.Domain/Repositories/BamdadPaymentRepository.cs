@@ -98,7 +98,7 @@ namespace BamdadPaymentCore.Domain.Repositories
         {
             var siteIdParam = new SqlParameter("@Online_ID", SqlDbType.Int)
             { Direction = ParameterDirection.Input, Value = parameter.Online_ID };
-            var d= context.Database
+            var d = context.Database
                 .SqlQuery<SelectOnlinePayResult>($"EXEC  {StoreProcedureName.SelectOnlinePay}  {siteIdParam}")
                 .ToList().First();
             return d;
@@ -560,9 +560,14 @@ namespace BamdadPaymentCore.Domain.Repositories
                 Direction = ParameterDirection.Input,
                 Value = parameter.AsanError
             };
+            return await context.Database.SqlQuery<GetFailedVerifyPaymentsResult>($"EXEC {StoreProcedureName.GetFailedVerifyPayments} {onlineIdParam}").ToListAsync();
+        }
 
-            return await context.Database.SqlQuery<GetFailedVerifyPaymentsResult>
-                ($"EXEC {StoreProcedureName.GetFailedVerifyPayments} {onlineIdParam}").ToListAsync();
+        public async Task<List<GetFailedSettlePaymentsResult>> GetFailedInSettleBankPayments(GetFailedVerifyPaymentsParameter parameter)
+        {
+            var IsSettle = new SqlParameter("@IsSettle", parameter.AsanError);
+
+            return await context.Database.SqlQuery<GetFailedSettlePaymentsResult>($"EXEC {StoreProcedureName.GetFailedInSettleBankPayments} {IsSettle}").ToListAsync();
         }
 
         public UpdateVerifyFailedPaymentResult UpdateVerifyFailedPayment(UpdateVerifyFailedPaymentParameter parameter)
@@ -570,9 +575,8 @@ namespace BamdadPaymentCore.Domain.Repositories
             var ErrorCode = new SqlParameter("@ErrorCode", parameter.ErrorCode);
 
             var OnlineId = new SqlParameter("@OnlineId", parameter.OnlineId);
-           
-            return context.Database.SqlQuery<UpdateVerifyFailedPaymentResult>
-                ($"EXEC {StoreProcedureName.UpdateVerifyFailedPayment} {OnlineId},{ErrorCode}").ToList().First();
+
+            return context.Database.SqlQuery<UpdateVerifyFailedPaymentResult>($"EXEC {StoreProcedureName.UpdateVerifyFailedPayment} {OnlineId},{ErrorCode}").ToList().First();
         }
     }
 }

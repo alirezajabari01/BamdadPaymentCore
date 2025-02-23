@@ -15,6 +15,8 @@ namespace BamdadPaymentCore.Domain.IServices
 
         public Task PayFailedVerifyPayments();
 
+        public Task PayFailedInSettlePayments();
+
         public Task<TResult> GetToken<TRequest, TResult>(TRequest request, SelectPaymentDetailResult paymentDetail)
             where TRequest : ITokenCommand where TResult : class, ITokenVm, new();
 

@@ -1,18 +1,8 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 using BamdadPaymentCore.Domain.IServices;
-using Microsoft.AspNetCore.Http;
-using BamdadPaymentCore.Domain.Services;
 using BamdadPaymentCore.Domain.IRepositories;
 using BamdadPaymentCore.Domain.Common;
 using Microsoft.Extensions.Options;
@@ -24,17 +14,31 @@ using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.bill;
 using BamdadPaymentCore.Domain.AsanPardakht.AsanRest.models.reverse;
 using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.ControllerDto;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using BamdadPaymentCore.Domain.Enums;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using XAct.Utils;
 using Uri = System.Uri;
-using BamdadPaymentCore.Domain.Entites;
 
 namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
     public class AsanResetService(IBamdadPaymentRepository repository, IOptionsSnapshot<PaymentGatewaySetting> paymentGatewaySetting) : IAsanRestService
     {
+
+        public async Task PayFailedInSettlePayments()
+        {
+            var faileds = await repository.GetFailedInSettleBankPayments(new GetFailedVerifyPaymentsParameter(AsanError.SettleErrored));
+
+            foreach (var faile in faileds)
+            {
+                try
+                {
+                    ProcessPayFailedSettlePayments(faile);
+                }
+                catch (Exception ex)
+                {
+                    repository.insertSiteError(new InsertSiteErrorParameter(ex.Message, "back groundjob PayFailedInSettlePayments thrown Exception"));
+                }
+            }
+        }
+
         public async Task<ReverseVm> ReverseTransaction(AsanRestRequest requst)
         {
             var client = CreateClient(requst.BankUser, requst.BankPassword);
@@ -451,7 +455,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                     {
                         ProcessPayFailedVerifyPayments(pending);
                     }
-                    catch (Exception ex) { }
+                    catch (Exception ex) { repository.insertSiteError(new InsertSiteErrorParameter(ex.Message, "back groundjob PayFailedVerifyPayments thrown Exception")); }
 
                 }
             }
@@ -472,7 +476,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             try
             {
                 tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
-               url=  repository.UpdateTransactionResult(new UpdateTransactionResultParameter(tranResult.referenceNumber, onlineId, tranResult.resCode.ToString(), tranResult.refId, tranResult.saleReferenceId, tranResult.cardHolderInfo)).Site_ReturnUrl;
+                url = repository.UpdateTransactionResult(new UpdateTransactionResultParameter(tranResult.referenceNumber, onlineId, tranResult.resCode.ToString(), tranResult.refId, tranResult.saleReferenceId, tranResult.cardHolderInfo)).Site_ReturnUrl;
                 //repository.Update(new OnlinePay()
                 //{
                 //    OnlineId = OnlineIdInt,
@@ -490,9 +494,10 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                 {
                     return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
                 }
-                else {
+                else
+                {
                     url = UpdateTransactionResult(tranResult, onlineId);
-                   
+
                 }
             }
             catch (Exception ex)
@@ -531,6 +536,8 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             var verifyRes = Verify(verifyCommand, faileds.Online_ID);
 
             if (verifyRes != "success") return verifyRes;
+
+            repository.UpdateTransactionResult(new UpdateTransactionResultParameter(faileds.ReferenceNumber, faileds.Online_ID.ToString(), 0.ToString(), faileds.Online_TransactionNo, faileds.Online_OrderNo, faileds.CardHolderInfo));
 
             var input = new SettleAsanInput(faileds.Bank_User, faileds.Bank_Pass, faileds.Online_OrderNo, faileds.Online_ID);
 
@@ -614,6 +621,13 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
         private string UpdateVerifyFailedPayment(int errorCode, int onlineId)
             => repository.UpdateVerifyFailedPayment(new UpdateVerifyFailedPaymentParameter(errorCode.ToString(), onlineId)).Site_ReturnUrl;
+
+        private void ProcessPayFailedSettlePayments(GetFailedSettlePaymentsResult result)
+        {
+            var input = new SettleAsanInput(result.Bank_User, result.Bank_Pass, result.Online_OrderNo, result.Online_ID);
+
+            Settle(input, result.Site_ReturnUrl, result.Online_ID);
+        }
 
         #endregion
     }
