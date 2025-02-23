@@ -494,11 +494,12 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                 {
                     return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
                 }
-                else
-                {
-                    url = UpdateTransactionResult(tranResult, onlineId);
+                //this is incorrect because changes error code to -2 and it is not nessesary at all to update again 
+                //else
+                //{
+                //    url = UpdateTransactionResult(tranResult, onlineId);
 
-                }
+                //}
             }
             catch (Exception ex)
             {
@@ -526,6 +527,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 
         public string ProcessPayFailedVerifyPayments(GetFailedVerifyPaymentsResult faileds)
         {
+
             var verifyCommand = new AsanRestRequest
             {
                 merchantConfigurationId = Convert.ToInt32(faileds.Bank_MerchantID),
