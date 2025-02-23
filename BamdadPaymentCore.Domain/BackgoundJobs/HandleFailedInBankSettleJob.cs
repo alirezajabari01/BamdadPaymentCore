@@ -12,7 +12,7 @@ namespace BamdadPaymentCore.Domain.BackgoundJobs
 
         public override async Task Execute(IJobExecutionContext context)
         {
-          
+            await _asanRestService.PayFailedInSettlePayments();
         }
     }
 }

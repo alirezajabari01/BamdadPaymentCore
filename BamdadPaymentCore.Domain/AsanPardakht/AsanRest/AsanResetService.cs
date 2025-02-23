@@ -571,7 +571,6 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                 var verifyRes = VerifyTransaction(req).Result;
 
                 if (verifyRes.ResCode != 0) return UpdateVerifyFailedPayment(verifyRes.ResCode, onlineId);
-
                 return "success";
             }
             catch (Exception ex)

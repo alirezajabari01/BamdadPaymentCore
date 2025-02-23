@@ -9,7 +9,7 @@ builder.ConfigureOptionPattern();
 builder.Services.AddControllersWithViews();
 builder.Services.RegisterSoapServices();
 builder.Services.RegisterDomainDependencies();
-//builder.RegisterQuartz();
+builder.RegisterQuartz();
 
 var app = builder.Build();
 
