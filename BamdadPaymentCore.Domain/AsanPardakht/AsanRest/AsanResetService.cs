@@ -16,6 +16,7 @@ using BamdadPaymentCore.Domain.Models.StoreProceduresModels.Parameters;
 using BamdadPaymentCore.Domain.Models.ControllerDto;
 using BamdadPaymentCore.Domain.Enums;
 using Uri = System.Uri;
+using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
 {
@@ -477,29 +478,11 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
             {
                 tranResult = GetTransationResultFromAsanPardakht(onlineId, paymentDetail);
                 url = repository.UpdateTransactionResult(new UpdateTransactionResultParameter(tranResult.referenceNumber, onlineId, tranResult.resCode.ToString(), tranResult.refId, tranResult.saleReferenceId, tranResult.cardHolderInfo)).Site_ReturnUrl;
-                //repository.Update(new OnlinePay()
-                //{
-                //    OnlineId = OnlineIdInt,
-                //    OnlineErrorCode = tranResult.resCode.ToString(),
-                //    AutoSettle = paymentDetail.AutoSettle,
-                //    CardHolderInfo = tranResult.cardHolderInfo ?? "",
-                //    IsSettle = paymentDetail.IsSettle,
-                //    OnlineOrderNo = tranResult.saleReferenceId ?? "",
-                //    OnlineTransactionNo = tranResult.refId ?? "",
-                //    ReferenceNumber = tranResult.referenceNumber ?? "",
-                //    OnlinePrice = paymentDetail.Online_Price
-                //});
 
                 if (tranResult.resCode != 0)
                 {
                     return InsertTransactionResultError(paymentDetail, tranResult, onlineId);
                 }
-                //this is incorrect because changes error code to -2 and it is not nessesary at all to update again 
-                //else
-                //{
-                //    url = UpdateTransactionResult(tranResult, onlineId);
-
-                //}
             }
             catch (Exception ex)
             {
@@ -571,6 +554,9 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                 var verifyRes = VerifyTransaction(req).Result;
 
                 if (verifyRes.ResCode != 0) return UpdateVerifyFailedPayment(verifyRes.ResCode, onlineId);
+
+                repository.UpdateIsVerify(new UpdateIsVerifyParameter(VerifyCode.Verfify, onlineId));
+
                 return "success";
             }
             catch (Exception ex)
@@ -602,7 +588,7 @@ namespace BamdadPaymentCore.Domain.AsanPardakht.AsanRest
                 .Site_ReturnUrl;
 
         public string UpdateTransactionResult(AsanTransactionResult result, string onlineId)
-        => repository.UpdateTransactionResult(new UpdateTransactionResultParameter(result.referenceNumber, onlineId, result.refId, result.saleReferenceId, result.cardHolderInfo)).Site_ReturnUrl;
+        => repository.UpdateTransactionResult(new UpdateTransactionResultParameter(result.referenceNumber, onlineId, result.resCode.ToString(), result.refId, result.saleReferenceId, result.cardHolderInfo)).Site_ReturnUrl;
 
         private int Int(string value) => Convert.ToInt32(value);
 

@@ -59,5 +59,7 @@ namespace BamdadPaymentCore.Domain.Models.StoreProceduresModels
         public const string UpdateVerifyFailedPayment = "dbo.UpdateVerifyFailedPayment";
 
         public const string UpdateOP = "dbo.UpdateOP";
+
+        public const string UpdateIsVerify = "dbo.UpdateIsVerify";
     }
 }

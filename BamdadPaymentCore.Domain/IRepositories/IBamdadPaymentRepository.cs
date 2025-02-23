@@ -8,6 +8,8 @@ namespace BamdadPaymentCore.Domain.IRepositories
 {
     public interface IBamdadPaymentRepository
     {
+        public UpdateIsVerifyResult UpdateIsVerify(UpdateIsVerifyParameter parameter);
+
         public Task<List<GetFailedSettlePaymentsResult>> GetFailedInSettleBankPayments(GetFailedVerifyPaymentsParameter parameter);
 
         public void Update(OnlinePay onlinePay);

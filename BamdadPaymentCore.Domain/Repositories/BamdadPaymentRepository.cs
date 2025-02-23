@@ -578,5 +578,14 @@ namespace BamdadPaymentCore.Domain.Repositories
 
             return context.Database.SqlQuery<UpdateVerifyFailedPaymentResult>($"EXEC {StoreProcedureName.UpdateVerifyFailedPayment} {OnlineId},{ErrorCode}").ToList().First();
         }
+
+        public UpdateIsVerifyResult UpdateIsVerify(UpdateIsVerifyParameter parameter)
+        {
+            var ErrorCode = new SqlParameter("@IsVerified", parameter.IsVerify);
+
+            var OnlineId = new SqlParameter("@OnlineId", parameter.OnlineId);
+
+            return context.Database.SqlQuery<UpdateIsVerifyResult>($"EXEC {StoreProcedureName.UpdateIsVerify} {ErrorCode},{OnlineId}").ToList().First();
+        }
     }
 }

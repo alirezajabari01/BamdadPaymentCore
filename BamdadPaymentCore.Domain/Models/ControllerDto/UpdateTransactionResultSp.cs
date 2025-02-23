@@ -2,3 +2,4 @@
 {
     public record UpdateTransactionResultSp(string Site_ReturnUrl);
 }
+

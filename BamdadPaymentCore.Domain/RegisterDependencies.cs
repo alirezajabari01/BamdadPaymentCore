@@ -60,6 +60,10 @@ namespace BamdadPaymentCore.Domain
 
                         var type = jobs.FirstOrDefault(d => d.Name == conf.JobKey);
 
+                        var identity = confs.Count(d=>d.WithIdentity == conf.WithIdentity);
+
+                        if(identity > 1) throw new FileNotFoundException($"WithIdentity '{conf.JobKey}' Duplicated.");
+
                         if (type is null) throw new FileNotFoundException($"Job class '{conf.JobKey}' not found.");
 
                         var jobKey = new JobKey(conf.JobKey);
